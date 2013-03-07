@@ -19,6 +19,21 @@
     var scroll_div_width;
     var scroll_div_height;
 
+    /* Set this either for horizontal either for vertical orientation of article slider. */
+    var orientation = {
+        horizontal: true,
+        vertical: false
+    };
+
+    /* Just for checking the orientation setting above. */
+    if (!orientation.horizontal && !orientation.vertical) || (orientation.horizontal && orientation.vertical) {
+        throw {
+            name: "Error: Wrong orientation settings!",
+            message: "Can't have horizontal and vertical setting the same value!"
+        }
+        console.log("Error: Wrong orientation settings!");
+    }
+
     // Navigation placeholders. Used if the number of articles excide 18.
     var left_nav;
     var right_nav;
@@ -26,49 +41,59 @@
     var my_top;
     var my_left;  // For positioning article divs.
 
-    // Basic setup of articles.
+    /* Basic manual setup of articles.
+     * This value will be acquired dinamically by querying database.
+     */
     var NUMBER_OF_ARTICLES = 84;
-    var NUMBER_OF_ROWS = 3;
-    var NUMBER_OF_COLUMNS = parseInt(Math.round(NUMBER_OF_ARTICLES / NUMBER_OF_ROWS));
-    var GAP = 10;
 
-    /* Check if number of columns correspond to the number of articles.
-     * If not then adjust by adding one more column.
-    */
-    var reminder = NUMBER_OF_ARTICLES % NUMBER_OF_ROWS;
-    console.log('reminder: ' + reminder);
-    if (reminder === 1) {
-        NUMBER_OF_COLUMNS += 1;
+    if (orientation.horizontal) {
+        var NUMBER_OF_ROWS = 3;
+        var NUMBER_OF_COLUMNS = parseInt(Math.round(NUMBER_OF_ARTICLES / NUMBER_OF_ROWS));
+
+        /* Check if number of columns correspond to the number of articles.
+        * If not then adjust by adding one more column.
+        */
+        var reminder = NUMBER_OF_ARTICLES % NUMBER_OF_ROWS;
+        console.log("reminder: " + reminder);
+
+        if (reminder === 1) {
+            NUMBER_OF_COLUMNS += 1;
+        }
+
+        console.log("NUMBER_OF_ARTICLES: " + NUMBER_OF_ARTICLES);
+        console.log("NUMBER_OF_COLUMNS: " + NUMBER_OF_COLUMNS);
+
+    } else if (orientation.vertical) {
+        var NUMBER_OF_ROWS = 6;
     }
 
-    console.log('NUMBER_OF_ARTICLES: ' + NUMBER_OF_ARTICLES);
-    console.log('NUMBER_OF_COLUMNS: ' + NUMBER_OF_COLUMNS);
+    var GAP = 10;  // Change with a desing of page.
 
-    var art_item_width = 150;
-    var art_item_height = 100;
+    var art_item_width = 150; // Change with a desing of page.
+    var art_item_height = 100; // Change with a desing of page.
 
     // Calculate main container height.
     container_height = (NUMBER_OF_ROWS * art_item_height) + ((NUMBER_OF_ROWS + 3) * GAP);
-    container.style.height = container_height + "px";
+    container.style.height = container_height + 'px';
 
     // Calculate scroll_div width & height.
     scroll_div_width = (NUMBER_OF_COLUMNS * art_item_width) + ((NUMBER_OF_COLUMNS + 1) * GAP);
     scroll_div_height = (NUMBER_OF_ROWS * art_item_height) + ((NUMBER_OF_ROWS + 1) * GAP);
-    scroll_div.style.width = scroll_div_width + "px";
-    scroll_div.style.height = scroll_div_height + "px";
+    scroll_div.style.width = scroll_div_width + 'px';
+    scroll_div.style.height = scroll_div_height + 'px';
     console.log("scroll_div_width: " + scroll_div_width);
     var scroll_div_max_movement = scroll_div_width - container_width;
     console.log("scroll_div_max_movement: " + scroll_div_max_movement);
 
     // Partitioning scroll_div_max_movement in to equal parts, according to max one step movement.
-    // max one step movement is currently 2xNUMBER_OF_COLUMNS + 2xGAP.
+    // max one step movement is currently (2xNUMBER_OF_COLUMNS) + (2xGAP).
     var move_limit = 2 * art_item_width + 2 * GAP; // 170px
     var equal_divisor = parseInt(Math.floor(scroll_div_max_movement / move_limit));
-    console.log('equal divisor: ' + equal_divisor);
-    console.log('move limit: ' + move_limit);
-    console.log('equal divisor: ' + equal_divisor);
+    console.log("equal divisor: " + equal_divisor);
+    console.log("move limit: " + move_limit);
+    console.log("equal divisor: " + equal_divisor);
     move_limit = scroll_div_max_movement / equal_divisor;
-    console.log('<recalculated> move limit: ' + move_limit);
+    console.log("<recalculated> move limit: " + move_limit);
 
     var SAVED_MOVE_LIMIT = move_limit;
     var scroll_reminder = 0;
