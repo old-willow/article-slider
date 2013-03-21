@@ -2,7 +2,7 @@
  * file: article-slider.js
  * maintainer: Kolozsi Róbert <kolozsi.robert@gmail.com>
  * date: Nov 13, 2012
- * last update: Jan 2, 2013
+ * last update: March 21, 2013
  */
 
 /* This is a prototype project. With time it will probably evolve in to object API.*/
