@@ -10,8 +10,6 @@
 
 /* index.html is the basic html setup for this slider. */
 
-// TEST
-
 
 (function(window, undefined) {
     var document = window.document;
@@ -35,8 +33,7 @@
     //    vertical: 0
     //};
 
-    /* ASOB === Article Slider Object */
-    var ASOB = {
+    var AScss = {
         /* Orientation. */
         /* Default setting is a horizontal orientation. */
         orientation: {
@@ -67,7 +64,9 @@
 
         /* Space between two articles (both: horiz, vert) and space between article and scroll_div. */
         gap: 10,
+    }
 
+    var ASmainContainer = {
         /* Main Container. (the main container div) */
         mainContainer: null,
         var setMainContainer: function() {
@@ -89,13 +88,20 @@
              * Width of mainContainer is depend on these parameters:
              * numberOfColumns, articleItemWidth and gap. */
             this.mainContainerWidht = this.numberOfColums * this.articleItemWidth + (2 * this.gap);
+        }
+    }
 
-        },
-
+    /* ASOB === Article Slider Object */
+    var ASarticleItem = {
         // Some css setting form article div.
         articleItemWidth: 150,
         articleItemHeight: 100,
 
+        numberOfArticles: 84
+
+    }
+
+    var ASscrollContainer = {
         scrollContainer: null,
         var setScrollContainer: function() {
             this.scrollContainer = document.getElementById('scroll_div');
@@ -103,12 +109,11 @@
         var getScrollContainer: function() {
             return this.scrollContainer;
         },
-        scrollContainerWidth: '',
-        scrollContainerHeight: '',
+        scrollContainerWidth: 0,
+        scrollContainerHeight: 0
+    }
 
-        numberOfArticles: 84,
-
-
+    var ASnavigatorButtons = {
     /*
      * Navigation buttons or navigation divs are in function of width and height of ASOB.mainContainer.
      * If the number of articles mach the width and height of ASOB.mainContainer, don't excide out of boundaries,
@@ -117,6 +122,9 @@
     */
         navigatorUpLeft: null,
         navigatorDownRight: null,
+
+        navigarorSliderOn: true,
+        navigatorSlider: null
     }
 
     /* Just for checking the orientation setting above. */
