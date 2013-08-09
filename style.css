@@ -8,14 +8,14 @@ body {
     border: 0px;
     background: #141414;
 }
-#container {
+#main_container {
     position: relative;
     /*overflow-x: scroll;/* This is added dynamicaly in javascript. */
     /*top: 5px;/**/
     margin: 0 auto;
     padding: 0px;
     border: 0px;
-    width: 900px;
+    /*width: 900px;*/
     /*height: 400px;/**/
     background: #1e1e1e;
     border: 1px solid #808080;
