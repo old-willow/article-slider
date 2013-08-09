@@ -10,6 +10,8 @@
 
 /* index.html is the basic html setup for this slider. */
 
+// TEST
+
 
 (function(window, undefined) {
     var document = window.document;
