@@ -13,118 +13,259 @@
 
 (function(window, undefined) {
     var document = window.document;
-    // Container div element (static in page.)
-    var container = document.getElementById('main_container');
-    var scroll_div = document.getElementById('scroll_div');
-    var art_item;
-    var container_height;
-    var container_width;
-    var scroll_div_width;
-    var scroll_div_height;
+    //var container = document.getElementById('main_container');
+    //var scroll_div = document.getElementById('scroll_div');
+    //var article_item;
+    //var container_height;
+    //var container_width;
+    //var scroll_div_width;
+    //var scroll_div_height;
 
-    /* Set this either for horizontal either for vertical orientation of article slider. */
-    //var orientation = {
-    //    horizontal: true,
-    //    vertical: false
-    //};
+    var ASArticle = {
+        width: 150 + 10,  // 10 is for border of article item.
+        height: 100 + 10,
 
-    //var ORIENT = {
-    //    horizontal: 1,
-    //    vertical: 0
-    //};
+        /* This value will be acquired dinamically by querying database. */
+        nArticles: 2,
 
-    var AScss = {
-        /* Orientation. */
-        /* Default setting is a horizontal orientation. */
-        orientation: {
-            horizontal: 1,
-            vertical: 0
-        },
-        var getOrientation: function() {
-            return this.orientation;
-        },
+        item: null,
 
-        //var setOrientation: function(o) {
-        //    this.orientation = o;
-        //},
+        /* ********************************
+        *  Creating and sorting articles.
+        * ********************************/
+        createArticles: function() {
+            //my_left = this.gap / 2;
+            //var article_counter = 1;
+            //for (i = 0; i < ASBasic.nColumns; i += 2) {
+            //    my_top = this.gap / 2;
+            //    for (j = 0; j < ASBasic.nRows; j += 1) {
+            //        if (art_counter <= this.nArticles) {  // Don't draw the none existing article boxes.
+                        item = document.createElement('div');
+                        //ASSlidingContainer.slideContainer.appendChild(article_item);
+                        item.setAttribute('class', 'article_item');
+                        //item.innerHTML = artcle_counter;
+            //            article_counter += 1;
 
-        numberOfRows: 1,  // Default.
-        numberOfColumns: 1,  // Default.
-        var setNumberOfColumns: function(n) {
-            (function() {
-                if (this.orientation.horizontal && !this.orientation.vertical) {
-                    this.numberOfColumns = parseInt(Math.round(this.numberOfArticles/ this.numberOfRows));
-                } else if (this.orientation.vertical && !this.orientation.horizontal) {
-                    //
-                } else {
-                    console.log("ERROR: Can't have both orientations true or false at the same time.");
-                }
-            })();
-        },
+            //            article_item.style.top = my_top + "px";
+            //            article_item.style.left = my_left + "px";
 
-        /* Space between two articles (both: horiz, vert) and space between article and scroll_div. */
-        gap: 10,
+            //            my_top += this.height + this.gap;
+            //        }
+            //    }
+            //my_left += this.widht + this.gap;
+            //}
+                        return item;
+       }
+
     }
 
-    var ASmainContainer = {
-        /* Main Container. (the main container div) */
-        mainContainer: null,
-        var setMainContainer: function() {
-            this.mainContainer = document.getElementById('main_container');
-            if (this.mainContainer) {
-                this.setNumberOfColumns();
-                this.mainContainer.style.width =  this.mainContainerWidth + 'px';
+    var ASBasic = {
+        /* Basic object for setup a slider structure. */
+        /* Default setting is a horizontal orientation. */
+        orientation: {
+            horizontal: 0,
+            vertical: 1
+        },
+
+        /* Space between two articles (both: horiz, vert)
+         * and space between article and scroll_div. */
+        gap: 10,
+
+        nRows: 6,  // Default.
+        nColumns: 1,  // Default.
+        setColumnsRows: function() {
+            if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
+                // Correcting number of columns because they are in dependencie of number of articles.
+                this.nColumns = parseInt(Math.round(ASArticle.nArticles / this.nRows));
+                var reminder = ASArticle.nArticles % this.nRows;
+                if (!reminder && this.nColumns < ASArticle.nArticles) {
+                    this.nColumns += 1;
+                }
+
+            } else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
+                // Correcting number of rows because they are in dependencie of number of articles.
+                this.nRows = parseInt(Math.round(ASArticle.nArticles / this.nColumns));
+                var reminder = ASArticle.nArticles % this.nColumns;
+                if (!reminder && this.nRows < ASArticle.nArticles) {
+                    this.nRows += 1;
+                }
+
             } else {
-                console.log("ERROR: You didn't named id properly your main container or you don't have any main container element in html file.");
+                console.log("ERROR: Some errors occured!");
             }
-        },
-        var getMainContainer: function() {
-            return this.mainContainer;
-        },
-        mainContainerHeight: 0,
-        mainContainerWidth: 0,
-        var setMainContainerWidth = function() {
-            /*
-             * Width of mainContainer is depend on these parameters:
-             * numberOfColumns, articleItemWidth and gap. */
-            this.mainContainerWidht = this.numberOfColums * this.articleItemWidth + (2 * this.gap);
+                //console.log("Number of rows: " + ASBasic.nRows);
+                //console.log("Number of columns: " + ASBasic.nColumns);
         }
     }
 
-    /* ASOB === Article Slider Object */
-    var ASarticleItem = {
-        // Some css setting form article div.
-        articleItemWidth: 150,
-        articleItemHeight: 100,
+    var ASMainContainer = {
+        /* Main Container. (the main container div) */
+        mainContainer: null,
+        height: 300,   // This is should be set manualy if orientation is vertical!
+        width: 300,  // This is should be set manualy if orientation is horizontal!
+        setMainContainer: function() {
+            this.mainContainer = document.getElementById('main_container');  // If you rename this rename it also in html and css files.
+            if (this.mainContainer) {
+                ASBasic.setColumnsRows();
 
-        numberOfArticles: 84
+                if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal orientation
+                    this.height = (ASBasic.nRows * ASArticle.height) + ((ASBasic.nRows - 1) * ASBasic.gap) + (2 * ASBasic.gap);
+                    //this.width = (ASBasic.nColumns * ASArticle.width) + ((ASBasic.nColumns - 1) * ASArticle.gap) + (2 * ASArticle.gap);
 
+                } else if (!ASBasic.orientation.horizontal && ASBasic.orientation.vertical) {  // Vertical orientation
+                    //this.height = (ASBasic.nRows * ASArticle.height) + ((ASBasic.nRows - 1) * ASArticle.gap) + (2 * ASArticle.gap);
+                    this.width = (ASBasic.nColumns * ASArticle.width) + ((ASBasic.nColumns - 1) * ASBasic.gap) + (2 * ASBasic.gap);
+                }
+
+                //this.mainContainer.style.overflow = 'hidden';
+                this.mainContainer.style.width = this.width + 'px';
+                this.mainContainer.style.height = this.height + 'px';
+
+            } else {
+                console.log("ERROR: You didn't named id properly or you don't have any main container element in html file.");
+            }
+        },
+        getMainContainer: function() {
+            return this.mainContainer;
+        }
+        //setMainContainerWidth: function() {
+            /*
+             * Width of mainContainer is depend on these parameters:
+             * numberOfColumns, articleItemWidth and gap. */
+        //    this.width = ASBasic.nColumns * ASArticle.width + (2 * ASArticle.gap);
+        //}
     }
 
-    var ASscrollContainer = {
-        scrollContainer: null,
-        var setScrollContainer: function() {
-            this.scrollContainer = document.getElementById('scroll_div');
+
+    var ASSlidingContainer = {
+        width: 0,
+        height: 0,
+
+        slideContainer: null,
+
+        setSlideContainer: function() {
+            this.slideContainer = document.getElementById('sliding_div');
+
+            if (this.slideContainer) {
+                this.width = (ASBasic.nColumns * ASArticle.width) + ((ASBasic.nColumns - 1) * ASBasic.gap);
+                this.height = (ASBasic.nRows * ASArticle.height) + ((ASBasic.nRows - 1) * ASBasic.gap);
+                //console.log("Article height: " + ASArticle.height);
+                //console.log("Width: " + this.width);
+                console.log("Slider Height: " + this.height);
+
+                this.slideContainer.style.width = this.width + 'px';
+                this.slideContainer.style.height = this.height + 'px';
+                this.slideContainer.style.top = ASBasic.gap + 'px';
+                this.slideContainer.style.left = ASBasic.gap + 'px';
+
+                this.distributeArticles();
+
+            } else {
+                console.log("ERROR: You didn't named id properly or don't have any slide container element in html file.");
+            }
         },
-        var getScrollContainer: function() {
-            return this.scrollContainer;
+
+        getSlideContainer: function() {
+            return this.slideContainer;
         },
-        scrollContainerWidth: 0,
-        scrollContainerHeight: 0
+
+        distributeArticles: function() {
+            my_left = ASBasic.gap / 2;
+            var article_counter = 1;
+            var article_item = null;
+            var my_top = 0;
+
+            for (i = 0; i < ASBasic.nColumns; i += 2) {
+                my_top = ASBasic.gap / 2;
+
+                for (j = 0; j < ASBasic.nRows; j += 1) {
+                    if (article_counter <= ASArticle.nArticles) {  // Don't draw the none existing article boxes.
+                        //article_item = document.createElement('div');
+                        ASArticle.createArticles();
+                        article_item = ASArticle.createArticles();
+                        this.slideContainer.appendChild(article_item);
+                        //article_item.setAttribute('class', 'article_item');
+                        article_item.innerHTML = article_counter;
+                        article_counter += 1;
+
+                        article_item.style.top = my_top + 'px';
+                        article_item.style.left = my_left + 'px';
+
+                        my_top += ASArticle.height + ASBasic.gap;
+                    }
+                }
+
+            my_left += ASArticle.widht + ASBasic.gap;
+
+            }
+        }
     }
 
-    var ASnavigatorButtons = {
+    var ASNavigatorButtons = {
     /*
      * Navigation buttons or navigation divs are in function of width and height of ASOB.mainContainer.
      * If the number of articles mach the width and height of ASOB.mainContainer, don't excide out of boundaries,
      * then navigations are not needed. In case the number of articles can't fit in ASOB.mainContainer width and height
      * then navigation divs are necessery and are created.
     */
-        navigatorUpLeft: null,
-        navigatorDownRight: null,
+        width: 0,
+        height: 0,
+        upLeft: null,
+        downRight: null,
 
-        navigarorSliderOn: true,
-        navigatorSlider: null
+        sliderOn: true,
+        slider: null,
+        setNavigation: function() {
+            /* This should be put in condition for checking if navigations are needed at all. */
+            //    if (ASMainContainer.width < (ASSlidingContainer.width + 2 * ASArticle.gap)) {}
+            upLeft = document.getElementById('up_left_nav');
+            downRight = document.getElementById('down_right_nav');
+
+            if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizonal
+                this.height = ASMainContainer.height;
+                //console.log(this.height);
+                this.width = 50;  // Set manualy.
+
+                upLeft.style.width = this.width + 'px';
+                upLeft.style.height = this.height + 'px';
+                downRight.style.width = this.width + 'px';
+                downRight.style.height = this.height + 'px';
+
+                /* Positioning navigator buttons. */
+                //var lpos = ASMainContainer.mainContainer.offsetleft;
+                //var lpos = document.getElementById('main_container').offsetLeft;
+                var lpos = ASMainContainer.mainContainer.offsetLeft;
+                upLeft.style.left = (lpos - this.width) + 'px';
+                downRight.style.left = (lpos + ASMainContainer.width + 2) + 'px';
+
+            } else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
+                this.width = ASMainContainer.width;
+                console.log("widht: " + this.width);
+                this.height = 50;  // Set manualy.
+                console.log("height: " + this.height);
+
+                upLeft.style.width = this.width + 'px';
+                upLeft.style.height = this.height + 'px';
+                downRight.style.width = this.width + 'px';
+                downRight.style.height = this.height + 'px';
+
+                upLeft.style.left = ASMainContainer.getMainContainer().offsetLeft + 'px';
+                downRight.style.left = ASMainContainer.getMainContainer().offsetLeft + 'px';
+
+                /* Repositioning the mainContainer. */
+                var mc = ASMainContainer.getMainContainer();
+                var mctop = mc.offsetTop;
+                mc.style.top = mctop + this.height + 'px';
+                //console.log(mctop);
+
+                /* Positioning the navigator buttons. */
+                upLeft.style.top = mctop + 'px';
+                downRight.style.top = (this.height + ASMainContainer.height + 2) + 'px';
+            }
+        },
+        setSlider: function() {
+            //
+        }
     }
 
     /* Just for checking the orientation setting above. */
@@ -150,47 +291,53 @@
 
     /*
      * Basic manual setup of articles.
-     * This value will be acquired dinamically by querying database.
      */
     //var NUMBER_OF_ARTICLES = 84;
     //var GAP = 10;  // Should be changeable with a desing of page.
     //var article_item_width = 150; // Should be changeable with a desing of page.
     //var article_item_height = 100; // Should be changeable with a desing of page.
 
-    /* Setting the mainContainer object. */
-    ASOB.setMainContainer();
+        ASMainContainer.setMainContainer();
+        ASSlidingContainer.setSlideContainer();
+        ASNavigatorButtons.setNavigation();
 
-    if (ASOB.horizontal && !ASOB.vertical) {
+    //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {
+    //    ASMainContainer.setMainContainer();
+    //    ASSlidingContainer.setSlideContainer();
+    //    ASNavigatorButtons.setNavigation();
         //var NUMBER_OF_ROWS = 3;
         //var NUMBER_OF_COLUMNS = parseInt(Math.round(NUMBER_OF_ARTICLES / NUMBER_OF_ROWS));
         //container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
         //container_width = (article_item_width * NUMBER_OF_COLUMNS) + (GAP * (NUMBER_OF_COLUMNS + 1));
         //container.style.width = 900 + 'px';
-        container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
+        //container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
         //container.style.width = (container_width - 2) + "px";  // 2 - stands for 2px for the border of the container.
 
         /*
          * Check if number of columns correspond to the number of articles.
          * If not then adjust by adding one more column.
          */
-        var reminder = NUMBER_OF_ARTICLES % NUMBER_OF_ROWS;
+        //var reminder = NUMBER_OF_ARTICLES % NUMBER_OF_ROWS;
         //console.log("reminder: " + reminder);
 
-        if (reminder === 1) {
-            NUMBER_OF_COLUMNS += 1;
-        }
+        //if (reminder === 1) {
+        //    NUMBER_OF_COLUMNS += 1;
+        //}
 
         //console.log("NUMBER_OF_ARTICLES: " + NUMBER_OF_ARTICLES);
         //console.log("NUMBER_OF_COLUMNS: " + NUMBER_OF_COLUMNS);
 
-    } else if (ASOB.vertical && !ASOB.horizontal) {
+    //} else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {
+    //    ASMainContainer.setMainContainer();
+    //    ASSlidingContainer.setSlideContainer();
+    //    ASNavigatorButtons.setNavigation();
         //container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
-        container_width = article_item_width + (2 * GAP);
-        container.style.width = container_width + "px";
-        var NUMBER_OF_ROWS = 6;
-        var NUMBER_OF_COLUMNS = 1;
+        //container_width = article_item_width + (2 * GAP);
+        //container.style.width = container_width + "px";
+        //var NUMBER_OF_ROWS = 6;
+        //var NUMBER_OF_COLUMNS = 1;
 
-    }
+    //}
 
     // Calculate main container height. I is same for vertical and horizontal orientations.
     container_height = (NUMBER_OF_ROWS * article_item_height) + ((NUMBER_OF_ROWS + 3) * GAP);
@@ -251,19 +398,19 @@
      *  Creating and sorting articles.
      * ********************************/
     my_left = GAP / 2;
-    var art_counter = 1;
+    var article_counter = 1;
     for (i = 0; i < NUMBER_OF_COLUMNS; i += 1) {
         my_top = GAP / 2;
         for (j = 0; j < NUMBER_OF_ROWS; j += 1) {
             if (art_counter <= NUMBER_OF_ARTICLES) {  // Don't draw the none existing article boxes.
-                art_item = document.createElement('div');
-                scroll_div.appendChild(art_item);
-                art_item.setAttribute('class', 'article_item');
-                art_item.innerHTML = art_counter;
+                article_item = document.createElement('div');
+                ASSlidingContainer.slideContainer.appendChild(article_item);
+                article_item.setAttribute('class', 'article_item');
+                article_item.innerHTML = article_counter;
                 art_counter += 1;
 
-                art_item.style.top = my_top + "px";
-                art_item.style.left = my_left + "px";
+                article_item.style.top = my_top + "px";
+                article_item.style.left = my_left + "px";
 
                 my_top += article_item_height + GAP;
             }
@@ -279,7 +426,7 @@
     if (scroll_div.children.length > 18) {
         left_nav = document.getElementById('left_nav');
         right_nav = document.getElementById('right_nav');
-        slider_bar = document.getElementById('slider_div');
+        slider_bar = document.getElementById('drag_div');
         left_nav.style.height = container_height + "px";
         right_nav.style.height = container_height + "px";
 
@@ -290,7 +437,7 @@
         slider_bar.style.visibility = "visible";
 
         var scroll_div_x_pos = 0;
-        var position = scroll_div.offsetLeft;  // Get the value of the left propterty!
+        var position = scroll_div.offsetLeft;  // Get the value of the left property!
         console.log('position: ' + position);
 
         /* IMPORTANT!: The sum of the array numbers have to be 100!!! */

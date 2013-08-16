@@ -9,7 +9,7 @@ body {
     background: #141414;
 }
 #main_container {
-    position: relative;
+    /*position: relative;/**/
     /*overflow-x: scroll;/* This is added dynamicaly in javascript. */
     /*top: 5px;/**/
     margin: 0 auto;
@@ -26,21 +26,22 @@ body {
     user-select: none;
 }
 
-#scroll_div {
+#sliding_div {
     position: relative; /* Consider this to absolute, for browsers flow calculation reduction.*/
     /*margin: 0 auto;/**/
-    top: 10px;
+    /*top: 10px;*/
     padding: 0px;
     border: 0px;
     /*width: 900px;/**/
     width: 0px;
     /*height: 390px;/**/
-    background: #151515;/**/
+    /*background: #151515;  /* Default. */
+    background: #808080;  /* Test. */
     /*background: yellow;/**/
 }
 
 .article_item {
-    position: absolute;
+    /*position: absolute;/**/
     /*margin: 0px;/**/
     width: 150px;
     height: 100px;/**/
@@ -54,11 +55,14 @@ body {
 }
 
 .navigation {
-    position: absolute;
-    top: 0px;
+    /*position: relative;/**/
+    margin: 0 auto;
+    /*top: 0px;/**/
     width: 50px;
     /*height: 400px;/**/
-    background: #1f1f1f;
+    /*background: #1f1f1f;/**/
+    background: #484848;/**/
+    border: 1px solid #484848;
     color: #818181;
 }
 .navigation:hover {
@@ -67,19 +71,19 @@ body {
     cursor: pointer;/**/
 }
 
-#left_nav {
-    position: absolute;
-    left: 0px;
-    float: left;
+#up_left_nav {
+    /*position: relative;/**/
+    /*left: 0px;/**/
+    /*float: left;/**/
 }
 
-#right_nav {
-    position: absolute;
-    right: 0px;
-    float: right;
+#down_right_nav {
+    /*position: relative;/**/
+    /*right: 0px;/**/
+    /*float: right;/**/
 }
 
-#slider_div {
+#drag_div {
     position: absolute;
     visibility: hidden;
     /*background: #808080;/**/
