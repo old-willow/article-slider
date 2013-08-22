@@ -8,13 +8,13 @@ body {
     border: 0px;
     background: #141414;
 }
-#main_container {
-    /*position: relative;/**/
-    /*overflow-x: scroll;/* This is added dynamicaly in javascript. */
+.main_container_vertical {
+    position: relative;/**/
+    /*overflow: scroll;/* This is added dynamicaly in javascript. */
     /*top: 5px;/**/
     margin: 0 auto;
     padding: 0px;
-    border: 0px;
+    /*border: 0px;/**/
     /*width: 900px;*/
     /*height: 400px;/**/
     background: #1e1e1e;
@@ -25,7 +25,23 @@ body {
     -o-user-select: none;
     user-select: none;
 }
-
+.main_container_horizontal {
+    position: relative;/**/
+    /*overflow: scroll;/* This is added dynamicaly in javascript. */
+    /*top: 5px;/**/
+    margin: 0 auto;
+    padding: 0px;
+    /*border: 0px;/**/
+    /*width: 900px;*/
+    /*height: 400px;/**/
+    background: #1e1e1e;
+    border: 1px solid #808080;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
 #sliding_div {
     position: relative; /* Consider this to absolute, for browsers flow calculation reduction.*/
     /*margin: 0 auto;/**/
@@ -41,7 +57,7 @@ body {
 }
 
 .article_item {
-    /*position: absolute;/**/
+    position: absolute;/**/
     /*margin: 0px;/**/
     width: 150px;
     height: 100px;/**/
@@ -54,16 +70,29 @@ body {
     border: 5px solid #959595;/**/
 }
 
-.navigation {
-    /*position: relative;/**/
+.navigation_vertical {
+    position: absolute;/**/
     margin: 0 auto;
     /*top: 0px;/**/
-    width: 50px;
+    /*width: 50px;/**/
     /*height: 400px;/**/
     /*background: #1f1f1f;/**/
     background: #484848;/**/
     border: 1px solid #484848;
     color: #818181;
+}
+.navigation_horizontal {
+    position: absolute;/**/
+    margin: 0 auto;
+    /*top: 0px;/**/
+    /*width: 50px;/**/
+    /*height: 400px;/**/
+    /*background: #1f1f1f;/**/
+    background: #484848;/**/
+    border: 1px solid #484848;
+    color: #818181;
+}
+.navigation {
 }
 .navigation:hover {
     background: #2d2d2d;
