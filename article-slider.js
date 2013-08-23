@@ -3,10 +3,10 @@
  * maintainer: Kolozsi Róbert <robert.kolozsi@gmail.com>
  * date: Nov 13, 2012
  * last milestone: March 21, 2013
- * last update: Aug 22, 2013
+ * last update: Aug 23, 2013
  */
 
-/* This is a prototype project. With time it will probably evolve in to object API.*/
+/* This is a prototype project. */
 
 /* index.html is the basic html setup for this slider. */
 
@@ -26,7 +26,7 @@
         height: 100 + 10,
 
         /* This value will be acquired dinamically by querying database. */
-        nArticles: 4,
+        nArticles: 7,
 
         item: null,
 
@@ -49,7 +49,7 @@
         orientation: {
             types: ['Horizontal', 'Vertical'],
 
-            current: null, // Default.
+            current: null,
 
             setOrientation: function(n) {
                 this.current = this.types[n];
@@ -60,31 +60,50 @@
          * and space between article and scroll_div. */
         gap: 10,
 
-        nRows: 2,  // Default.
-        nColumns: 2,  // Default.
+        nRows: 1,  // This is taken into a count only if orientation is horiz.
+        nColumns: 3,  // This is taken into a count only if orientation is vert.
         setColumnsRows: function() {
+            /* if orientation is horizontal then decide how many rows you want and
+             * columns have to be calculated. */
             if (this.orientation.current === 'Horizontal') {
-            //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
                 // Correcting number of columns because they are in dependencies of ASArticle.nArticles and nRows.
-                this.nColumns = parseInt(Math.round(ASArticle.nArticles / this.nRows));
-                var reminder = ASArticle.nArticles % this.nRows;
-
-                if (!reminder && this.nColumns < ASArticle.nArticles) {
-                    this.nColumns += 1;
+                if (ASArticle.nArticles <= this.nRows) {
+                    this.nRows = ASArticle.nArticles;
+                    this.nColumns = 1;
+                } else if (ASArticle.nArticles > this.nRows) {
+                    this.nColumns = parseInt(Math.ceil(ASArticle.nArticles / this.nRows));
                 }
+                //console.log("nColumns: " + this.nColumns);
+                //console.log("nRows: " + this.nRows);
+                //var reminder = ASArticle.nArticles % this.nRows;
+                //console.log("reminder: " + reminder);
 
+                //if (reminder && this.nColumns < ASArticle.nArticles) {
+                //    this.nColumns += 1;
+                //}
+
+            /* If orientation is vertical then decide how many columns you want and
+             * rows have to be calculated. */
             } else if (this.orientation.current === 'Vertical') {
-            //} else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
                 // Correcting number of rows because they are in dependencie of number of articles.
-                this.nRows = parseInt(Math.round(ASArticle.nArticles / this.nColumns));
-                var reminder = ASArticle.nArticles % this.nColumns;
-
-                if (!reminder && this.nRows < ASArticle.nArticles) {
-                    this.nRows += 1;
+                if (ASArticle.nArticles <= this.nColumns) {
+                    this.nColumns = ASArticle.nArticles;
+                    this.nRows = 1;
+                } else if (ASArticle.nArticles > this.nColumns) {
+                    this.nRows = parseInt(Math.ceil(ASArticle.nArticles / this.nColumns));
                 }
+                //console.log("nRows: " + this.nRows);
+                //console.log("nColumns: " + this.nColumns);
+                //var reminder = ASArticle.nArticles % this.nColumns;
+                //console.log("reminder: " + reminder);
+
+                //if (reminder && this.nRows < ASArticle.nArticles) {
+                //    this.nRows += 1;
+                //    console.log("nRows: " + this.nRows);
+                //}
 
             } else {
-                console.log("ERROR: Some errors occured!");
+                console.log("ERROR: Can't calculate columns or rows for some error accoured!");
             }
                 //console.log("Number of rows: " + ASBasic.nRows);
                 //console.log("Number of columns: " + ASBasic.nColumns);
@@ -101,12 +120,14 @@
         setSlidingContainer: function() {
             this.slideContainer = document.getElementById('sliding_div');
 
-            if (this.slideContainer) {
+            if (typeof this.slideContainer !== null) {
                 this.width = (ASBasic.nColumns * ASArticle.width) + ((ASBasic.nColumns - 1) * ASBasic.gap);
                 this.height = (ASBasic.nRows * ASArticle.height) + ((ASBasic.nRows - 1) * ASBasic.gap);
                 //console.log("Article height: " + ASArticle.height);
-                //console.log("Width: " + this.width);
-                //console.log("Slider Height: " + this.height);
+                console.log("Slider nColumns: " + ASBasic.nColumns);
+                console.log("Slider nRows: " + ASBasic.nRows);
+                console.log("Slider Width: " + this.width);
+                console.log("Slider Height: " + this.height);
 
                 this.slideContainer.style.width = this.width + 'px';
                 this.slideContainer.style.height = this.height + 'px';
@@ -126,36 +147,67 @@
 
         distributeArticles: function() {
             /* Columns first distribution. */
-            var leftPos = 0; // ASBasic.gap / 2;
+            var leftPos = 0;
             var topPos = 0;
 
             var article_counter = 1;
             var article_item = null;
 
-            for (i = 0; i < ASBasic.nColumns; i += 1) {  // Distributing rows.
+            if (ASBasic.orientation.current === 'Horizontal') {
+                for (i = 0; i < ASBasic.nColumns; i += 1) {  // Distributing rows.
 
-                topPos = 0;// ASBasic.gap / 2;  // Because of new row. Reset this to start value.
+                    topPos = 0;  // Because of new row, reset this to start value.
 
-                for (j = 0; j < ASBasic.nRows; j += 1) {  // Distributing columns.
+                    for (j = 0; j < ASBasic.nRows; j += 1) {  // Distributing columns.
 
-                    if (article_counter <= ASArticle.nArticles) {  // Don't draw the none existing article boxes.
+                        console.log("article_counter: "  + article_counter);
+                        if (article_counter <= ASArticle.nArticles) {  // Don't draw the none existing article boxes.
 
-                        article_item = ASArticle.createArticles();
+                            article_item = ASArticle.createArticles();
 
-                        this.slideContainer.appendChild(article_item);
+                            this.slideContainer.appendChild(article_item);
 
-                        article_item.innerHTML = article_counter;  // Put here the content of article stamp later.
-                        article_counter += 1;
+                            article_item.innerHTML = article_counter;  // Put here the content of article stamp later.
+                            article_counter += 1;
 
-                        article_item.style.top = topPos + 'px';
-                        article_item.style.left = leftPos + 'px';
+                            article_item.style.top = topPos + 'px';
+                            article_item.style.left = leftPos + 'px';
 
-                        topPos += ASArticle.height + ASBasic.gap;
+                            topPos += ASArticle.height + ASBasic.gap;
+                        }
+
                     }
 
+                    leftPos += ASArticle.width + ASBasic.gap;
                 }
 
-                leftPos += ASArticle.width + ASBasic.gap;
+            } else if (ASBasic.orientation.current === 'Vertical') {
+                for (i = 0; i < ASBasic.nRows; i += 1) {  // Distributing columns.
+
+                    leftPos = 0;  // Because of new row, reset this to start value.
+
+                    for (j = 0; j < ASBasic.nColumns; j += 1) {  // Distributing rows.
+
+                        console.log("article_counter: "  + article_counter);
+                        if (article_counter <= ASArticle.nArticles) {  // Don't draw the none existing article boxes.
+
+                            article_item = ASArticle.createArticles();
+
+                            this.slideContainer.appendChild(article_item);
+
+                            article_item.innerHTML = article_counter;  // Put here the content of article stamp later.
+                            article_counter += 1;
+
+                            article_item.style.top = topPos + 'px';
+                            article_item.style.left = leftPos + 'px';
+
+                            leftPos += ASArticle.width + ASBasic.gap;
+                        }
+
+                    }
+
+                    topPos += ASArticle.height + ASBasic.gap;
+                }
             }
         }
     }
@@ -176,7 +228,6 @@
             downRight = document.getElementById('down_right_nav');
 
             if (ASBasic.orientation.current === 'Horizontal') {
-            //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
 
                 ASMainContainer.mainContainer.setAttribute('class', 'main_container_horizontal');
                 //upLeft.setAttribute('class', 'navigation_horizontal');
@@ -208,11 +259,8 @@
                 ASMainContainer.mainContainer.style.left = this.widht + 'px';
 
             } else if (ASBasic.orientation.current === 'Vertical') {
-            //} else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
 
                 ASMainContainer.mainContainer.setAttribute('class', 'main_container_vertical');
-                //upLeft.setAttribute('class', 'navigation_vertical');
-                //downRight.setAttribute('class', 'navigation_vertical');
                 upLeft.className += ' navigation_horizontal';
                 downRight.className += ' navigation_horizontal';
 
@@ -229,21 +277,13 @@
                 /* Repositioning the mainContainer. */
                 var mc = ASMainContainer.getMainContainer();
                 var mctop = mc.offsetTop;
-                //mc.style.top = mctop + this.height + 'px';
                 mc.style.top = this.height + 2 + 'px';
                 //console.log(mctop);
 
-                //upLeft.style.left = ASMainContainer.getMainContainer().offsetLeft + 'px';
-                //downRight.style.left = ASMainContainer.getMainContainer().offsetLeft + 'px';
                 upLeft.style.left = -1 + 'px';  // -1 for border.
                 upLeft.style.top = -(this.height + 3) + 'px';
                 downRight.style.left = -1 + 'px';
                 downRight.style.top = ASMainContainer.height + 1 + 'px';
-
-
-                /* Positioning verticaly the navigator buttons. */
-                //upLeft.style.top = mctop + 'px';
-                //downRight.style.top = (this.height + ASMainContainer.height + 2) + 'px';
             }
         },
 
@@ -256,8 +296,8 @@
     var ASMainContainer = {
         /* Main Container. (the main container div) */
         mainContainer: null,
-        height: 300,   // This is should be set manualy if orientation is vertical!
-        width: 300,    // This is should be set manualy if orientation is horizontal!
+        height: 300,   // This is should be set manualy if orientation is vertical otherwise it's calculated.
+        width: 300,    // This is should be set manualy if orientation is horizontal otherwise it's calculated.
 
         setMainContainer: function() {
             /* If you rename this rename it also in html and css files! */
@@ -267,14 +307,12 @@
                 ASBasic.setColumnsRows();
 
                 if (ASBasic.orientation.current === 'Horizontal') {
-                //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal orientation
                     this.height = (ASBasic.nRows * ASArticle.height) +
                         ((ASBasic.nRows - 1) * ASBasic.gap) +
                         (2 * ASBasic.gap) +
                         (2 * ASNavigatorButtons.height);
 
                 } else if (ASBasic.orientation.current === 'Vertical') {
-                //} else if (!ASBasic.orientation.horizontal && ASBasic.orientation.vertical) {  // Vertical orientation
                     this.width = (ASBasic.nColumns * ASArticle.width) +
                         ((ASBasic.nColumns - 1) * ASBasic.gap) +
                         (2 * ASBasic.gap) +
@@ -284,7 +322,6 @@
                 //this.mainContainer.style.overflow = 'hidden';
                 this.mainContainer.style.width = this.width + 'px';
                 this.mainContainer.style.height = this.height + 'px';
-                //console.log(">>>> " + ASNavigatorButtons.height);
                 this.mainContainer.style.top = ASNavigatorButtons.height + 'px';
 
             } else {
@@ -303,6 +340,9 @@
         }
     }
 
+    /* *********************************** *
+     * The actual construction of slider.  *
+     * *********************************** */
     ASBasic.orientation.setOrientation(0);
     console.log("Orientation: " + ASBasic.orientation.current);
     ASMainContainer.setArticleSlider();
