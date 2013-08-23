@@ -47,8 +47,13 @@
         /* Basic object for setup a slider structure. */
         /* Default setting is a horizontal orientation. */
         orientation: {
-            horizontal: 1,
-            vertical: 0
+            types: ['Horizontal', 'Vertical'],
+
+            current: null, // Default.
+
+            setOrientation: function(n) {
+                this.current = this.types[n];
+            }
         },
 
         /* Space between two articles (both: horiz, vert)
@@ -58,7 +63,8 @@
         nRows: 2,  // Default.
         nColumns: 2,  // Default.
         setColumnsRows: function() {
-            if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
+            if (this.orientation.current === 'Horizontal') {
+            //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
                 // Correcting number of columns because they are in dependencies of ASArticle.nArticles and nRows.
                 this.nColumns = parseInt(Math.round(ASArticle.nArticles / this.nRows));
                 var reminder = ASArticle.nArticles % this.nRows;
@@ -67,7 +73,8 @@
                     this.nColumns += 1;
                 }
 
-            } else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
+            } else if (this.orientation.current === 'Vertical') {
+            //} else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
                 // Correcting number of rows because they are in dependencie of number of articles.
                 this.nRows = parseInt(Math.round(ASArticle.nArticles / this.nColumns));
                 var reminder = ASArticle.nArticles % this.nColumns;
@@ -154,8 +161,7 @@
     }
 
     var ASNavigatorButtons = {
-    /*
-    */
+    /* */
         width: 0,
         height: 0,
         upLeft: null,
@@ -169,7 +175,8 @@
             upLeft = document.getElementById('up_left_nav');
             downRight = document.getElementById('down_right_nav');
 
-            if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
+            if (ASBasic.orientation.current === 'Horizontal') {
+            //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal
 
                 ASMainContainer.mainContainer.setAttribute('class', 'main_container_horizontal');
                 //upLeft.setAttribute('class', 'navigation_horizontal');
@@ -200,7 +207,8 @@
                 ASMainContainer.mainContainer.style.top = 0 + 'px';
                 ASMainContainer.mainContainer.style.left = this.widht + 'px';
 
-            } else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
+            } else if (ASBasic.orientation.current === 'Vertical') {
+            //} else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {  // Vertical
 
                 ASMainContainer.mainContainer.setAttribute('class', 'main_container_vertical');
                 //upLeft.setAttribute('class', 'navigation_vertical');
@@ -252,18 +260,21 @@
         width: 300,    // This is should be set manualy if orientation is horizontal!
 
         setMainContainer: function() {
-            this.mainContainer = document.getElementById('main_container');  // If you rename this rename it also in html and css files!
+            /* If you rename this rename it also in html and css files! */
+            this.mainContainer = document.getElementById('main_container');
 
             if (this.mainContainer) {
                 ASBasic.setColumnsRows();
 
-                if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal orientation
+                if (ASBasic.orientation.current === 'Horizontal') {
+                //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {  // Horizontal orientation
                     this.height = (ASBasic.nRows * ASArticle.height) +
                         ((ASBasic.nRows - 1) * ASBasic.gap) +
                         (2 * ASBasic.gap) +
                         (2 * ASNavigatorButtons.height);
 
-                } else if (!ASBasic.orientation.horizontal && ASBasic.orientation.vertical) {  // Vertical orientation
+                } else if (ASBasic.orientation.current === 'Vertical') {
+                //} else if (!ASBasic.orientation.horizontal && ASBasic.orientation.vertical) {  // Vertical orientation
                     this.width = (ASBasic.nColumns * ASArticle.width) +
                         ((ASBasic.nColumns - 1) * ASBasic.gap) +
                         (2 * ASBasic.gap) +
@@ -292,6 +303,8 @@
         }
     }
 
+    ASBasic.orientation.setOrientation(0);
+    console.log("Orientation: " + ASBasic.orientation.current);
     ASMainContainer.setArticleSlider();
 
 })(window);
