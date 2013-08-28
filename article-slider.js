@@ -13,13 +13,6 @@
 
 (function(window, undefined) {
     var document = window.document;
-    //var container = document.getElementById('main_container');
-    //var scroll_div = document.getElementById('scroll_div');
-    //var article_item;
-    //var container_height;
-    //var container_width;
-    //var scroll_div_width;
-    //var scroll_div_height;
 
     var ASArticle = {
         width: 150 + 10,  // 10 is for border of article item.
@@ -61,7 +54,7 @@
         gap: 10,
 
         nRows: 1,  // This is taken into a count only if orientation is horiz.
-        nColumns: 3,  // This is taken into a count only if orientation is vert.
+        nColumns: 1,  // This is taken into a count only if orientation is vert.
         setColumnsRows: function() {
             /* if orientation is horizontal then decide how many rows you want and
              * columns have to be calculated. */
@@ -73,14 +66,6 @@
                 } else if (ASArticle.nArticles > this.nRows) {
                     this.nColumns = parseInt(Math.ceil(ASArticle.nArticles / this.nRows));
                 }
-                //console.log("nColumns: " + this.nColumns);
-                //console.log("nRows: " + this.nRows);
-                //var reminder = ASArticle.nArticles % this.nRows;
-                //console.log("reminder: " + reminder);
-
-                //if (reminder && this.nColumns < ASArticle.nArticles) {
-                //    this.nColumns += 1;
-                //}
 
             /* If orientation is vertical then decide how many columns you want and
              * rows have to be calculated. */
@@ -92,23 +77,68 @@
                 } else if (ASArticle.nArticles > this.nColumns) {
                     this.nRows = parseInt(Math.ceil(ASArticle.nArticles / this.nColumns));
                 }
-                //console.log("nRows: " + this.nRows);
-                //console.log("nColumns: " + this.nColumns);
-                //var reminder = ASArticle.nArticles % this.nColumns;
-                //console.log("reminder: " + reminder);
-
-                //if (reminder && this.nRows < ASArticle.nArticles) {
-                //    this.nRows += 1;
-                //    console.log("nRows: " + this.nRows);
-                //}
 
             } else {
                 console.log("ERROR: Can't calculate columns or rows for some error accoured!");
             }
-                //console.log("Number of rows: " + ASBasic.nRows);
-                //console.log("Number of columns: " + ASBasic.nColumns);
         }
     }
+
+
+    var ASMainContainer = {
+        wrapper: null,  // The wrapper div.
+        wrapperWidth: 0,
+        wrapperHeight: 0,
+
+        /* Main Container. (the main container div) */
+        mainContainer: null,
+        height: 300,   // This is should be set manualy if orientation is vertical otherwise it's calculated.
+        width: 300,    // This is should be set manualy if orientation is horizontal otherwise it's calculated.
+
+        setMainContainer: function() {
+            /* If you rename this rename it also in html and css files! */
+            this.mainContainer = document.getElementById('main_container');
+
+            if (typeof this.mainContainer !== null) {
+                ASBasic.setColumnsRows();
+
+                if (ASBasic.orientation.current === 'Horizontal') {
+                    this.mainContainer.setAttribute('class', 'main_container_horizontal');
+                    this.height = (ASBasic.nRows * ASArticle.height) +
+                        ((ASBasic.nRows - 1) * ASBasic.gap) +
+                        (2 * ASBasic.gap);
+
+                    this.mainContainer.style.top = 0 + 'px';
+                    this.mainContainer.style.left = 0 + 'px'; //this.width + 'px';
+
+                } else if (ASBasic.orientation.current === 'Vertical') {
+                    this.mainContainer.setAttribute('class', 'main_container_vertical');
+                    this.width = (ASBasic.nColumns * ASArticle.width) +
+                        ((ASBasic.nColumns - 1) * ASBasic.gap) +
+                        (2 * ASBasic.gap);
+
+                    this.mainContainer.style.top = ASNavigatorButtons.height + 'px';  // ??? what is this ???
+                }
+
+                this.mainContainer.style.overflow = 'hidden';
+                this.mainContainer.style.width = this.width + 'px';
+                this.mainContainer.style.height = this.height + 'px';
+
+            } else {
+                console.log("ERROR: You didn't named id properly or you don't have any main container element in html file.");
+            }
+        },
+
+        getMainContainer: function() {
+            return this.mainContainer;
+        },
+
+        setArticleSlider: function() {
+            this.setMainContainer();
+            ASSlidingContainer.setSlidingContainer();
+        }
+    }
+
 
 
     var ASSlidingContainer = {
@@ -159,8 +189,7 @@
                     topPos = 0;  // Because of new row, reset this to start value.
 
                     for (j = 0; j < ASBasic.nRows; j += 1) {  // Distributing columns.
-
-                        console.log("article_counter: "  + article_counter);
+                        //console.log("article_counter: "  + article_counter);
                         if (article_counter <= ASArticle.nArticles) {  // Don't draw the none existing article boxes.
 
                             article_item = ASArticle.createArticles();
@@ -175,7 +204,6 @@
 
                             topPos += ASArticle.height + ASBasic.gap;
                         }
-
                     }
 
                     leftPos += ASArticle.width + ASBasic.gap;
@@ -187,8 +215,7 @@
                     leftPos = 0;  // Because of new row, reset this to start value.
 
                     for (j = 0; j < ASBasic.nColumns; j += 1) {  // Distributing rows.
-
-                        console.log("article_counter: "  + article_counter);
+                        //console.log("article_counter: "  + article_counter);
                         if (article_counter <= ASArticle.nArticles) {  // Don't draw the none existing article boxes.
 
                             article_item = ASArticle.createArticles();
@@ -203,7 +230,6 @@
 
                             leftPos += ASArticle.width + ASBasic.gap;
                         }
-
                     }
 
                     topPos += ASArticle.height + ASBasic.gap;
@@ -229,48 +255,40 @@
 
             if (ASBasic.orientation.current === 'Horizontal') {
 
-                ASMainContainer.mainContainer.setAttribute('class', 'main_container_horizontal');
-                //upLeft.setAttribute('class', 'navigation_horizontal');
-                //downRight.setAttribute('class', 'navigation_horizontal');
                 upLeft.className += ' navigation_horizontal';
                 downRight.className += ' navigation_horizontal';
 
                 this.height = ASMainContainer.height;
+                //console.log("xxxxx: " + ASMainContainer.height);
                 //console.log(this.height);
-                this.width = 50;  // Set manualy.
+                this.width = 50 + 2;  // Set manualy.
 
                 upLeft.style.width = this.width + 'px';
                 upLeft.style.height = this.height + 'px';
+
                 downRight.style.width = this.width + 'px';
                 downRight.style.height = this.height + 'px';
 
                 /* Positioning navigator buttons. */
-                //upLeft.style.left = (ASMainContainer.mainContainer.offsetLeft - this.width) + 'px';
-                //downRight.style.left = (ASMainContainer.mainContainer.offsetLeft + ASMainContainer.width) + 'px';
-                upLeft.style.left = -(this.width + 3) + 'px';  // 3 = two borders of nav and 1 border from mainContainer
-                downRight.style.left = ASMainContainer.width + 1 + 'px';
-                //upLeft.style.float = 'left';
-                //downRight.style.float = 'right';
+                upLeft.style.left = 0 + 'px';
+                downRight.style.left = ASMainContainer.width + this.width + 4 + 'px';
 
                 upLeft.style.top = 0 + 'px';
                 downRight.style.top = 0 + 'px';
 
-                ASMainContainer.mainContainer.style.top = 0 + 'px';
-                ASMainContainer.mainContainer.style.left = this.widht + 'px';
-
             } else if (ASBasic.orientation.current === 'Vertical') {
 
-                ASMainContainer.mainContainer.setAttribute('class', 'main_container_vertical');
-                upLeft.className += ' navigation_horizontal';
-                downRight.className += ' navigation_horizontal';
+                upLeft.className += ' navigation_vertical';
+                downRight.className += ' navigation_vertical';
 
                 this.width = ASMainContainer.width;
                 //console.log("widht: " + this.width);
-                this.height = 50;  // Set manualy.
+                this.height = 50 + 2;  // Manualy.
                 //console.log("height: " + this.height);
 
                 upLeft.style.width = this.width + 'px';
                 upLeft.style.height = this.height + 'px';
+
                 downRight.style.width = this.width + 'px';
                 downRight.style.height = this.height + 'px';
 
@@ -278,74 +296,66 @@
                 var mc = ASMainContainer.getMainContainer();
                 var mctop = mc.offsetTop;
                 mc.style.top = this.height + 2 + 'px';
-                //console.log(mctop);
 
-                upLeft.style.left = -1 + 'px';  // -1 for border.
-                upLeft.style.top = -(this.height + 3) + 'px';
-                downRight.style.left = -1 + 'px';
-                downRight.style.top = ASMainContainer.height + 1 + 'px';
+                upLeft.style.left = 0 + 'px';
+                upLeft.style.top = 0 + 'px';
+
+                downRight.style.left = 0 + 'px';
+                downRight.style.top = ASMainContainer.height + ASNavigatorButtons.height + 2 + 'px';
             }
         },
 
-        setSlider: function() {
-            //
+        getUpLeft: function() {
+            return this.upLeft;
+        },
+        getDownRight: function() {
+            return this.downRight;
         }
     }
 
+    var ASWrapper = {
+        width: 0,
+        height: 0,
 
-    var ASMainContainer = {
-        /* Main Container. (the main container div) */
-        mainContainer: null,
-        height: 300,   // This is should be set manualy if orientation is vertical otherwise it's calculated.
-        width: 300,    // This is should be set manualy if orientation is horizontal otherwise it's calculated.
+        wrapper: null,
 
-        setMainContainer: function() {
-            /* If you rename this rename it also in html and css files! */
-            this.mainContainer = document.getElementById('main_container');
+        setWrapper: function() {
+            this.wrapper = document.getElementById('wrapper');
 
-            if (this.mainContainer) {
-                ASBasic.setColumnsRows();
-
+            if (typeof this.wrapper !== null) {
                 if (ASBasic.orientation.current === 'Horizontal') {
-                    this.height = (ASBasic.nRows * ASArticle.height) +
-                        ((ASBasic.nRows - 1) * ASBasic.gap) +
-                        (2 * ASBasic.gap) +
-                        (2 * ASNavigatorButtons.height);
+                    this.width = ASMainContainer.width + (2 * ASNavigatorButtons.width) + 4;
+                    this.height = ASMainContainer.height;
 
                 } else if (ASBasic.orientation.current === 'Vertical') {
-                    this.width = (ASBasic.nColumns * ASArticle.width) +
-                        ((ASBasic.nColumns - 1) * ASBasic.gap) +
-                        (2 * ASBasic.gap) +
-                        (2 * ASNavigatorButtons.width);
+                    this.width = ASMainContainer.width;
+                    //console.log("wrapper width: " + this.width);
+                    this.height = ASMainContainer.height + (2 * ASNavigatorButtons.height) + 2;
+                    //console.log("wrapper height: " + this.height);
+                    //console.log("main div height: " + ASMainContainer.height);
                 }
 
-                //this.mainContainer.style.overflow = 'hidden';
-                this.mainContainer.style.width = this.width + 'px';
-                this.mainContainer.style.height = this.height + 'px';
-                this.mainContainer.style.top = ASNavigatorButtons.height + 'px';
+                this.wrapper.style.width = this.width + 2 + 'px';
+                this.wrapper.style.height = this.height + 2 + 'px';
+                this.wrapper.style.top = 0 + 'px';  /* This should be set in css file. */
+                this.wrapper.style.left = 0 + 'px'; /* This should be set in css file. */
 
             } else {
-                console.log("ERROR: You didn't named id properly or you don't have any main container element in html file.");
+                conosle.log("ERROR: wrapper object not found in html file.");
             }
-        },
 
-        getMainContainer: function() {
-            return this.mainContainer;
-        },
-
-        setArticleSlider: function() {
-            this.setMainContainer();
-            ASSlidingContainer.setSlidingContainer();
-            ASNavigatorButtons.setNavigation();
         }
     }
-
     /* *********************************** *
      * The actual construction of slider.  *
      * *********************************** */
     ASBasic.orientation.setOrientation(0);
-    console.log("Orientation: " + ASBasic.orientation.current);
+    ASMainContainer.setMainContainer();
+    ASNavigatorButtons.setNavigation();
     ASMainContainer.setArticleSlider();
+    ASWrapper.setWrapper();
+
+    console.log("Orientation: " + ASBasic.orientation.current);
 
 })(window);
 
@@ -373,52 +383,6 @@
     /*
      * Basic manual setup of articles.
      */
-    //var NUMBER_OF_ARTICLES = 84;
-    //var GAP = 10;  // Should be changeable with a desing of page.
-    //var article_item_width = 150; // Should be changeable with a desing of page.
-    //var article_item_height = 100; // Should be changeable with a desing of page.
-
-        //ASMainContainer.setMainContainer();
-        //ASSlidingContainer.setSlidingContainer();
-        //ASNavigatorButtons.setNavigation();
-
-    //if (ASBasic.orientation.horizontal && !ASBasic.orientation.vertical) {
-    //    ASMainContainer.setMainContainer();
-    //    ASSlidingContainer.setSlideContainer();
-    //    ASNavigatorButtons.setNavigation();
-        //var NUMBER_OF_ROWS = 3;
-        //var NUMBER_OF_COLUMNS = parseInt(Math.round(NUMBER_OF_ARTICLES / NUMBER_OF_ROWS));
-        //container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
-        //container_width = (article_item_width * NUMBER_OF_COLUMNS) + (GAP * (NUMBER_OF_COLUMNS + 1));
-        //container.style.width = 900 + 'px';
-        //container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
-        //container.style.width = (container_width - 2) + "px";  // 2 - stands for 2px for the border of the container.
-
-        /*
-         * Check if number of columns correspond to the number of articles.
-         * If not then adjust by adding one more column.
-         */
-        //var reminder = NUMBER_OF_ARTICLES % NUMBER_OF_ROWS;
-        //console.log("reminder: " + reminder);
-
-        //if (reminder === 1) {
-        //    NUMBER_OF_COLUMNS += 1;
-        //}
-
-        //console.log("NUMBER_OF_ARTICLES: " + NUMBER_OF_ARTICLES);
-        //console.log("NUMBER_OF_COLUMNS: " + NUMBER_OF_COLUMNS);
-
-    //} else if (ASBasic.orientation.vertical && !ASBasic.orientation.horizontal) {
-    //    ASMainContainer.setMainContainer();
-    //    ASSlidingContainer.setSlideContainer();
-    //    ASNavigatorButtons.setNavigation();
-        //container_width = container.offsetWidth - 2;  // 2 - stands for 2px for the border of the container.
-        //container_width = article_item_width + (2 * GAP);
-        //container.style.width = container_width + "px";
-        //var NUMBER_OF_ROWS = 6;
-        //var NUMBER_OF_COLUMNS = 1;
-
-    //}
 
     // Calculate main container height. I is same for vertical and horizontal orientations.
     //container_height = (NUMBER_OF_ROWS * article_item_height) + ((NUMBER_OF_ROWS + 3) * GAP);
