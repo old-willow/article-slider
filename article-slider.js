@@ -135,34 +135,30 @@
 
         setArticleSlider: function() {
             this.setMainContainer();
-            ASSlidingContainer.setSlidingContainer();
+            ASScrollingDiv.setScrollingDiv();
         }
     }
 
 
-
-    var ASSlidingContainer = {
+    var ASScrollingDiv = {
         width: 0,
         height: 0,
 
-        slideContainer: null,
+        scrollingDiv: null,
 
-        setSlidingContainer: function() {
-            this.slideContainer = document.getElementById('sliding_div');
+        setScrollingDiv: function() {
+            this.scrollingDiv = document.getElementById('scrolling_div');
 
-            if (typeof this.slideContainer !== null) {
+            if (typeof this.scrollingDiv !== null) {
                 this.width = (ASBasic.nColumns * ASArticle.width) + ((ASBasic.nColumns - 1) * ASBasic.gap);
                 this.height = (ASBasic.nRows * ASArticle.height) + ((ASBasic.nRows - 1) * ASBasic.gap);
-                //console.log("Article height: " + ASArticle.height);
-                console.log("Slider nColumns: " + ASBasic.nColumns);
-                console.log("Slider nRows: " + ASBasic.nRows);
-                console.log("Slider Width: " + this.width);
-                console.log("Slider Height: " + this.height);
+                //console.log("Slider Width: " + this.width);
+                //console.log("Slider Height: " + this.height);
 
-                this.slideContainer.style.width = this.width + 'px';
-                this.slideContainer.style.height = this.height + 'px';
-                this.slideContainer.style.top = ASBasic.gap + 'px';
-                this.slideContainer.style.left = ASBasic.gap + 'px';
+                this.scrollingDiv.style.width = this.width + 'px';
+                this.scrollingDiv.style.height = this.height + 'px';
+                this.scrollingDiv.style.top = ASBasic.gap + 'px';
+                this.scrollingDiv.style.left = ASBasic.gap + 'px';
 
                 this.distributeArticles();
 
@@ -171,8 +167,8 @@
             }
         },
 
-        getSlidingContainer: function() {
-            return this.slideContainer;
+        getScrollingDiv: function() {
+            return this.scrollingDiv;
         },
 
         distributeArticles: function() {
@@ -194,7 +190,7 @@
 
                             article_item = ASArticle.createArticles();
 
-                            this.slideContainer.appendChild(article_item);
+                            this.scrollingDiv.appendChild(article_item);
 
                             article_item.innerHTML = article_counter;  // Put here the content of article stamp later.
                             article_counter += 1;
@@ -220,7 +216,7 @@
 
                             article_item = ASArticle.createArticles();
 
-                            this.slideContainer.appendChild(article_item);
+                            this.scrollingDiv.appendChild(article_item);
 
                             article_item.innerHTML = article_counter;  // Put here the content of article stamp later.
                             article_counter += 1;
@@ -238,6 +234,7 @@
         }
     }
 
+
     var ASNavigatorButtons = {
     /* */
         width: 0,
@@ -247,9 +244,12 @@
 
         sliderOn: true,
         slider: null,
+        sliderWidth: 0,
+        sliderHeight: 0,
+
         setNavigation: function() {
             /* This should be put in condition for checking if navigations are needed at all. */
-            //    if (ASMainContainer.width < (ASSlidingContainer.width + 2 * ASArticle.gap)) {}
+            //    if (ASMainContainer.width < (ASScrollingDiv.width + 2 * ASArticle.gap)) {}
             upLeft = document.getElementById('up_left_nav');
             downRight = document.getElementById('down_right_nav');
 
@@ -259,7 +259,7 @@
                 downRight.className += ' navigation_horizontal';
 
                 this.height = ASMainContainer.height;
-                //console.log("xxxxx: " + ASMainContainer.height);
+                //console.log("x--->: " + ASMainContainer.height);
                 //console.log(this.height);
                 this.width = 50 + 2;  // Set manualy.
 
@@ -308,10 +308,129 @@
         getUpLeft: function() {
             return this.upLeft;
         },
+
         getDownRight: function() {
             return this.downRight;
+        },
+
+        doASliding: function() {
+            /* Maybe declaration of variables should be moved here on top of the function. */
+            var maxScrollingDivMovement;
+            var moveLimit;
+            var equalDivisor;
+
+            var SAVED_MOVE_LIMIT;
+            var scrollingReminder = 0;
+
+            var scrollDivCalculatedPosX = 0;  // var scroll_div_x_pos
+            var scrollDivCalculatedPosY = 0;
+
+            var scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
+
+            /* IMPORTANT!: The sum of the array numbers have to be 100!!! */
+            var tween = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+            var tweenFrameNumber = tween.length;
+            var inAnimation = false;
+            var timerID;  // ??? Don't know what is this yet ???
+            var frames = [];
+
+            var maxSliderMovementH;
+            var scaleSliderMovementH;
+            var scaleScrollDivMovementH;
+            var sliderXPos = 0;
+            var readX = 0;
+            var clickX = 0;
+            var diffX = 0;
+            var lastX = 0;
+            var slided = false;  // Check if slider is moved. If true have to recalculate move_limit varible!
+
+            if (ASBasic.orientation.current === 'Horizontal') {
+                if (ASScrollingDiv.width > ASMainContainer.width) {
+                    maxScrollingDivMovement = ASScrollingDiv.width - ASMainContainer.width;
+                    //console.log("main div: " + ASMainContainer.width);
+                    //console.log("sliding div: " + ASScrollingDiv.width);
+                    //console.log("max sliding movement: " + maxMovement);
+
+                    /* Partitioning max movement of scrolling div per one click. */
+                    moveLimit = 2 * ASArticle.width + 2 * ASBasic.gap;
+                    equalDivisor = parseInt(Math.floor(maxScrollingDivMovement / moveLimit));
+                    //console.log("move limit: " + moveLimit);
+                    //console.log("equal divisor: " + equalDivisor);
+
+                    //console.log("sliderOn value: " + this.sliderOn);
+                    if (this.sliderOn) {
+                        // Creating a slider bar.
+                        this.slider = document.getElementById('slider_div');
+                        //console.log("slider: " + this.slider);
+                        if (typeof this.slider !== null) {
+                            this.slider.setAttribute('class', 'slider_div_horizontal');
+                            this.slider.style.visibility = 'visible';
+                            var sliderWidth = (ASMainContainer.width / ASScrollingDiv.width) * ASMainContainer.width;
+                            this.slider.style.width = sliderWidth + 'px';
+                            this.slider.style.height = 7 + 'px';
+
+                            var maxSliderMovementH = ASMainContainer.width - this.sliderWidth;
+                            var scaleSliderMovementH = maxSliderMovementH / (ASScrollingDiv.width - ASMainContainer.width);
+                            var scaleScrollDivMovementH = (ASScrollingDiv.width - ASMainContainer.width) / maxSliderMovementH;
+
+                            // Scrolling to the left function.
+                            var scrollLeft = (function() {
+                                var move_counter = 0;
+                                return function() {
+                                    if (scrollDivCalculatedPosX > -(maxScrollingDivMovement) && move_counter < tween.length) {
+                                        if (slided) {
+                                            scrollingReminder = maxScrollingDivMovement - Math.abs(scrollDivCalculatedPosX);
+                                            equalDivisor = parseInt(Math.ceil(scrollingReminder / moveLimit));
+                                            if (equalDivisor > 1) {
+                                                moveLimit = scrollingReminder / equalDivisor;
+                                            } else if (equalDivisor === 1) {
+                                                moveLimit = scrollingReminder;
+                                            }
+                                            slided = false;
+                                        }
+
+                                        if (!inAnimation) {
+                                            scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
+                                        }
+                                    }
+                                }
+                            })
+
+                        } else {
+                            console.log("ERROR: no slider!");
+                        }
+                    }
+
+                } else if (ASScrollingDiv.width <= ASMainContainer.width) {
+                    // pass.
+                }
+
+            } else if (ASBasic.orientation.current === 'Vertical') {
+                if (ASScrollingDiv.height > ASMainContainer.height) {
+                    maxScrollingDivMovement = ASScrollingDiv.height - ASMainContainer.height;
+                    moveLimit = 2 * ASArticle.height + 2 * ASBasic.gap;
+                    equalDivisor = parseInt(Math.floor(maxScrollingDivMovement / moveLimit));
+
+                    if (this.sliderOn) {
+                        this.slider = document.getElementById('slider_div');
+                        if (typeof this.slider !== null) {
+                            this.slider.setAttribute('class', 'slider_div_vertical');
+                            this.slider.style.visibility = 'visible';
+                            var sliderHeight = (ASMainContainer.height / ASScrollingDiv.height) * ASMainContainer.height;
+                            this.slider.style.height = sliderHeight + 'px';
+                            this.slider.style.width = 7 + 'px';
+                        } else {
+                            console.log("ERROR: no slider!");
+                        }
+                    }
+
+                } else if (ASScrollingDiv.height <= ASMainContainer.height) {
+                    // pass.
+                }
+            }
         }
     }
+
 
     var ASWrapper = {
         width: 0,
@@ -329,10 +448,7 @@
 
                 } else if (ASBasic.orientation.current === 'Vertical') {
                     this.width = ASMainContainer.width;
-                    //console.log("wrapper width: " + this.width);
                     this.height = ASMainContainer.height + (2 * ASNavigatorButtons.height) + 2;
-                    //console.log("wrapper height: " + this.height);
-                    //console.log("main div height: " + ASMainContainer.height);
                 }
 
                 this.wrapper.style.width = this.width + 2 + 'px';
@@ -346,51 +462,46 @@
 
         }
     }
+
     /* *********************************** *
      * The actual construction of slider.  *
      * *********************************** */
+
     ASBasic.orientation.setOrientation(0);
+    console.log("Orientation: " + ASBasic.orientation.current);
+
     ASMainContainer.setMainContainer();
     ASNavigatorButtons.setNavigation();
     ASMainContainer.setArticleSlider();
     ASWrapper.setWrapper();
+    ASNavigatorButtons.doASliding();
 
-    console.log("Orientation: " + ASBasic.orientation.current);
 
 })(window);
 
-    /* Just for checking the orientation setting above. */
-    //if ((!orientation.horizontal && !orientation.vertical) || (orientation.horizontal && orientation.vertical)) {
     //    throw {
     //        name: "Error: Wrong orientation settings!",
     //        message: "Can't have horizontal and vertical setting the same value!"
     //    }
     //    console.log("Error: Wrong orientation settings!");
-    //}
 
-    // Navigation placeholders.
-    // Used if the number of articles excide 18 in horizontal orientation,
-    // or if in vertical orientation excide 6.
-    //var left_nav;
-    //var right_nav;
+    //    var scroll_div_max_movement = scroll_div_width - container_width;
+    //    console.log("scroll_div_max_movement: " + scroll_div_max_movement);
 
-    //var up_nav;
-    //var down_nav;
+    //    // Partitioning scroll_div_max_movement in to equal parts, according to max one step movement.
+    //    // max one step movement is currently (2xNUMBER_OF_COLUMNS) + (2xGAP).
+    //    var move_limit = 2 * article_item_width + 2 * GAP; // 170px
+    //    var equal_divisor = parseInt(Math.floor(scroll_div_max_movement / move_limit));
+    //    console.log("equal divisor: " + equal_divisor);
+    //    console.log("move limit: " + move_limit);
+    //    console.log("equal divisor: " + equal_divisor);
+    //    move_limit = scroll_div_max_movement / equal_divisor;
+    //    console.log("<recalculated> move limit: " + move_limit);
 
-    //var my_top;
-    //var my_left;  // For positioning article divs.
+    //    var SAVED_MOVE_LIMIT = move_limit;
+    //    var scroll_reminder = 0;
 
-    /*
-     * Basic manual setup of articles.
-     */
-
-    // Calculate main container height. I is same for vertical and horizontal orientations.
-    //container_height = (NUMBER_OF_ROWS * article_item_height) + ((NUMBER_OF_ROWS + 3) * GAP);
-    //console.log("NUMBER_OF_ROWS + 3: " + NUMBER_OF_ROWS + 3);
-    //container.style.height = container_height + 'px';
-
-    // Calculate scroll_div width & height.
-    //if (orientation.horizontal) {
+    //    container.style.overflowX = 'hidden';
     //    scroll_div_width = (NUMBER_OF_COLUMNS * article_item_width) + ((NUMBER_OF_COLUMNS + 1) * GAP);
     //    scroll_div_height = (NUMBER_OF_ROWS * article_item_height) + ((NUMBER_OF_ROWS + 1) * GAP);
     //    scroll_div.style.width = scroll_div_width + 'px';
@@ -413,55 +524,6 @@
     //    var scroll_reminder = 0;
 
     //    container.style.overflowX = 'hidden';
-    //} else if (orientation.vertical) {
-    //    scroll_div_width = (NUMBER_OF_COLUMNS * article_item_width) + ((NUMBER_OF_COLUMNS + 1) * GAP);
-    //    scroll_div_height = (NUMBER_OF_ROWS * article_item_height) + ((NUMBER_OF_ROWS + 1) * GAP);
-    //    scroll_div.style.width = scroll_div_width + 'px';
-    //    scroll_div.style.height = scroll_div_height + 'px';
-    //    console.log("scroll_div_width: " + scroll_div_width);
-    //    var scroll_div_max_movement = scroll_div_width - container_width;
-    //    console.log("scroll_div_max_movement: " + scroll_div_max_movement);
-
-    //    // Partitioning scroll_div_max_movement in to equal parts, according to max one step movement.
-    //    // max one step movement is currently (2xNUMBER_OF_COLUMNS) + (2xGAP).
-    //    var move_limit = 2 * article_item_width + 2 * GAP; // 170px
-    //    var equal_divisor = parseInt(Math.floor(scroll_div_max_movement / move_limit));
-    //    console.log("equal divisor: " + equal_divisor);
-    //    console.log("move limit: " + move_limit);
-    //    console.log("equal divisor: " + equal_divisor);
-    //    move_limit = scroll_div_max_movement / equal_divisor;
-    //    console.log("<recalculated> move limit: " + move_limit);
-
-    //    var SAVED_MOVE_LIMIT = move_limit;
-    //    var scroll_reminder = 0;
-
-    //    container.style.overflowX = 'hidden';
-    //}
-
-
-    /* ********************************
-     *  Creating and sorting articles.
-     * ********************************/
-    //my_left = GAP / 2;
-    //var article_counter = 1;
-    //for (i = 0; i < NUMBER_OF_COLUMNS; i += 1) {
-    //    my_top = GAP / 2;
-    //    for (j = 0; j < NUMBER_OF_ROWS; j += 1) {
-    //        if (art_counter <= NUMBER_OF_ARTICLES) {  // Don't draw the none existing article boxes.
-    //            article_item = document.createElement('div');
-    //            ASSlidingContainer.slideContainer.appendChild(article_item);
-    //            article_item.setAttribute('class', 'article_item');
-    //            article_item.innerHTML = article_counter;
-    //            art_counter += 1;
-
-    //            article_item.style.top = my_top + "px";
-    //            article_item.style.left = my_left + "px";
-
-    //            my_top += article_item_height + GAP;
-    //        }
-    //    }
-    //    my_left += article_item_width + GAP;
-    //}
 
 
     /* *********************************************
@@ -471,7 +533,7 @@
     //if (scroll_div.children.length > 18) {
     //    left_nav = document.getElementById('left_nav');
     //    right_nav = document.getElementById('right_nav');
-    //    slider_bar = document.getElementById('drag_div');
+    //    slider_bar = document.getElementById('slider_div');
     //    left_nav.style.height = container_height + "px";
     //    right_nav.style.height = container_height + "px";
 

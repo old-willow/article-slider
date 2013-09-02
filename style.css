@@ -55,7 +55,7 @@ body {
     -o-user-select: none;
     user-select: none;
 }
-#sliding_div {
+#scrolling_div {
     position: relative; /* Consider this to absolute, for browsers flow calculation reduction.*/
     /*margin: 0 auto;/**/
     /*top: 10px;*/
@@ -125,17 +125,30 @@ body {
     /*float: right;/**/
 }
 
-#drag_div {
+.slider_div_horizontal {
     position: absolute;
     visibility: hidden;
     /*background: #808080;/**/
     background: #4c0000;
     left: 0px;
-    bottom: 0px;
+    bottom: 0px;/**/
     padding: 0px;
     margin: 0px;
     border: 0px;
-    height: 7px;
+    /*height: 7px;/**/
+    z-index: 127;
+}
+.slider_div_vertical {
+    position: absolute;
+    visibility: hidden;
+    /*background: #808080;/**/
+    background: #4c0000;
+    left: 0px;
+    top: 0px;/**/
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
+    /*height: 7px;/**/
     z-index: 127;
 }
 #slider_div:hover {
