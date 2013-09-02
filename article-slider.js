@@ -326,18 +326,20 @@
             var scrollDivCalculatedPosY = 0;
 
             var scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
+            var scrollDivCurrentPosY;
 
             /* IMPORTANT!: The sum of the array numbers have to be 100!!! */
             var tween = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
             var tweenFrameNumber = tween.length;
             var inAnimation = false;
-            var timerID;  // ??? Don't know what is this yet ???
+            var timerID;  // ??? Don't remember yet what is this for ???
             var frames = [];
 
             var maxSliderMovementH;
             var scaleSliderMovementH;
             var scaleScrollDivMovementH;
-            var sliderXPos = 0;
+            var sliderPosX = 0;
+            var sliderPosY = 0;
             var readX = 0;
             var clickX = 0;
             var diffX = 0;
@@ -353,6 +355,7 @@
 
                     /* Partitioning max movement of scrolling div per one click. */
                     moveLimit = 2 * ASArticle.width + 2 * ASBasic.gap;
+                    SAVED_MOVE_LIMIT = moveLimit;
                     equalDivisor = parseInt(Math.floor(maxScrollingDivMovement / moveLimit));
                     //console.log("move limit: " + moveLimit);
                     //console.log("equal divisor: " + equalDivisor);
@@ -375,6 +378,7 @@
 
                             // Scrolling to the left function.
                             var scrollLeft = (function() {
+                                var i;
                                 var move_counter = 0;
                                 return function() {
                                     if (scrollDivCalculatedPosX > -(maxScrollingDivMovement) && move_counter < tween.length) {
@@ -391,10 +395,61 @@
 
                                         if (!inAnimation) {
                                             scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
+                                            for (i = 0; i < tweenFrameNumber; i += 1) {
+                                                scrollDivCurrentPosX += (moveLimit * tween[i] * 0.01);
+                                                frames[i] = position;
+                                            }
+                                            i = 0;
+                                            inAnimation = true;
                                         }
+
+                                        scrollDivCalculatedPosX = -frames[move_counter];
+                                        sliderPosX = Math.abs(scrollDivCalculatedPosX * scaleSliderMovementH);
+                                        ASScrollingDiv.scrollingDiv.style.left = scrollDivCalculatedPosX + 'px';
+                                        this.slider.style.left = sliderPosX+ 'px';
+                                        move_counter += 1;
+                                        timerID = setTimeout(scrollLeft, 50);
+
+                                        if (scrollDivCalculatedPosX <= -(maxScrollingDivMovement)) {
+                                            moveLimit = SAVED_MOVE_LIMIT;
+                                        }
+                                    } else {
+                                        move_counter = 0;
+                                        inAnimation = false;
+                                        clearTimeout(timerID);  // Not necessary.
                                     }
                                 }
-                            })
+                            })();
+
+                            var scrollRight = (function() {
+                               var i;
+                               var move_counter = ;
+                               return fuction() {
+                                   if (scrollDivCalculatedPosX < 0 && move_counter < tween.length) {
+                                       scrollingReminder = Math.abs(scrollDivCalculatedPosX);
+                                       equalDivisor = parseInt(Math.ceil(scrollingReminder / moveLimit));
+                                       if (equalDivisor > 1) {
+                                           moveLimit = scrollingReminder / equalDivisor;
+                                       } else if (equalDivisor === 1) {
+                                            moveLimit = scrollingReminder;
+                                       }
+                                       slided = false;
+                                   }
+
+                                   if (! inAnimation) {
+                                       scrollDivCalculatedPosX = -frames[move_counter];
+                                       sliderPosX = -(scrollDivCalculatedPosX * scaleSliderMovementH);
+                                       ASScrollingDiv.scrollingDiv.style.left = scrollDivCalculatedPosX + 'px';
+                                       this.slider.style.left = sliderPosX + 'px';
+                                       move_counter += 1;
+                                       timerID = setTimeout(scrollRight, 50);
+
+                                       if (scrollDivCalculatedPosX <= -(maxScrollingDivMovement)) {
+                                           moveLimit = SAVED_MOVE_LIMIT;
+                                       }
+                                   }
+                               }
+                            })();
 
                         } else {
                             console.log("ERROR: no slider!");
@@ -610,23 +665,17 @@
     //                scroll_div_x_pos = -frames[move_counter];
     //                slider_x_pos = Math.abs(scroll_div_x_pos * scale_slider_movement);
     //                console.log("scroll_div_x_pos: " + scroll_div_x_pos);
-    //                //console.log("slider_x_pos: " + slider_x_pos);
     //                scroll_div.style.left = scroll_div_x_pos + "px";
     //                slider_bar.style.left = slider_x_pos + "px";
-    //                //console.log(scroll_div.style.left);
     //                move_counter += 1;
-    //                //console.log("move_counter: " + move_counter);
     //                // Recursion.
     //                timer_id = setTimeout(scroll_left, 50);
 
     //                if (scroll_div_x_pos <= -(scroll_div_max_movement)) {
     //                    move_limit = SAVED_MOVE_LIMIT;
-    //                    console.log("saved movelimit!");
-    //                    console.log("move_limit: " + move_limit);
     //                }
 
     //            } else {
-    //                console.log("Hey, conditions don't match.");
     //                move_counter = 0;
     //                in_animation = false;
     //                clearTimeout(timer_id);  // Not necessary.
@@ -643,17 +692,12 @@
     //                if (slided) {
     //                    /* Recalculate move_limit. */
     //                    scroll_reminder = Math.abs(scroll_div_x_pos);
-    //                    console.log("scroll_reminder: " + scroll_reminder);
     //                    equal_divisor = parseInt(Math.ceil(scroll_reminder / move_limit));
-    //                    console.log(">>>> move_limit: " + move_limit);
-    //                    console.log("equal_divisor: " + equal_divisor);
     //                    if (equal_divisor > 1) {
     //                        //equal_divisor = parseInt(Math.ceil(equal_divisor));
     //                        move_limit = scroll_reminder / equal_divisor;
-    //                        console.log("new move_limit: " + move_limit);
     //                    } else if (equal_divisor === 1) {
     //                        move_limit = scroll_reminder;
-    //                        console.log("move_limit: " + move_limit);
     //                    }
     //                    slided = false;
     //                }
@@ -669,7 +713,6 @@
 
     //                scroll_div_x_pos = -frames[move_counter];
     //                slider_x_pos = -(scroll_div_x_pos * scale_slider_movement);
-    //                console.log("scroll_div_x_pos: " + scroll_div_x_pos);
     //                scroll_div.style.left = scroll_div_x_pos + "px";
     //                slider_bar.style.left = slider_x_pos + "px";
     //                move_counter += 1;
