@@ -236,16 +236,11 @@
 
 
     var ASNavigatorButtons = {
-    /* */
+        // Navigation buttons
         width: 0,
         height: 0,
         upLeft: null,
         downRight: null,
-
-        sliderOn: true,
-        slider: null,
-        sliderWidth: 0,
-        sliderHeight: 0,
 
         setNavigation: function() {
             /* This should be put in condition for checking if navigations are needed at all. */
@@ -313,38 +308,48 @@
             return this.downRight;
         },
 
-        doASliding: function() {
+
+
+    var sliderBar = {
+        // Slider bar.
+        sliderOn: true,
+        slider: null,
+        sliderWidth: 0,
+        sliderHeight: 0,
+
+        maxScrollingDivMovement;
+        moveLimit;
+        equalDivisor;
+
+        SAVED_MOVE_LIMIT;
+        scrollingReminder = 0;
+
+        scrollDivCalculatedPosX = 0;  // var scroll_div_x_pos
+        scrollDivCalculatedPosY = 0;
+
+        scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
+        scrollDivCurrentPosY;
+
+        MPORTANT!: The sum of the array numbers have to be 100!!! */
+        tween = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        tweenFrameNumber = tween.length;
+        inAnimation = false;
+        timerID;  // ??? Don't remember yet what is this for ???
+        frames = [];
+
+        maxSliderMovementH;
+        scaleSliderMovementH;
+        scaleScrollDivMovementH;
+        sliderPosX = 0;
+        sliderPosY = 0;
+        readX = 0;
+        clickX = 0;
+        diffX = 0;
+        lastX = 0;
+        slided = false;  // Check if slider is moved. If true have to recalculate move_limit varible!
+
+        setSlider: function() {
             /* Maybe declaration of variables should be moved here on top of the function. */
-            var maxScrollingDivMovement;
-            var moveLimit;
-            var equalDivisor;
-
-            var SAVED_MOVE_LIMIT;
-            var scrollingReminder = 0;
-
-            var scrollDivCalculatedPosX = 0;  // var scroll_div_x_pos
-            var scrollDivCalculatedPosY = 0;
-
-            var scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
-            var scrollDivCurrentPosY;
-
-            /* IMPORTANT!: The sum of the array numbers have to be 100!!! */
-            var tween = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-            var tweenFrameNumber = tween.length;
-            var inAnimation = false;
-            var timerID;  // ??? Don't remember yet what is this for ???
-            var frames = [];
-
-            var maxSliderMovementH;
-            var scaleSliderMovementH;
-            var scaleScrollDivMovementH;
-            var sliderPosX = 0;
-            var sliderPosY = 0;
-            var readX = 0;
-            var clickX = 0;
-            var diffX = 0;
-            var lastX = 0;
-            var slided = false;  // Check if slider is moved. If true have to recalculate move_limit varible!
 
             if (ASBasic.orientation.current === 'Horizontal') {
                 if (ASScrollingDiv.width > ASMainContainer.width) {
@@ -364,7 +369,7 @@
                     if (this.sliderOn) {
                         // Creating a slider bar.
                         this.slider = document.getElementById('slider_div');
-                        //console.log("slider: " + this.slider);
+
                         if (typeof this.slider !== null) {
                             this.slider.setAttribute('class', 'slider_div_horizontal');
                             this.slider.style.visibility = 'visible';
@@ -375,81 +380,6 @@
                             var maxSliderMovementH = ASMainContainer.width - this.sliderWidth;
                             var scaleSliderMovementH = maxSliderMovementH / (ASScrollingDiv.width - ASMainContainer.width);
                             var scaleScrollDivMovementH = (ASScrollingDiv.width - ASMainContainer.width) / maxSliderMovementH;
-
-                            // Scrolling to the left function.
-                            var scrollLeft = (function() {
-                                var i;
-                                var move_counter = 0;
-                                return function() {
-                                    if (scrollDivCalculatedPosX > -(maxScrollingDivMovement) && move_counter < tween.length) {
-                                        if (slided) {
-                                            scrollingReminder = maxScrollingDivMovement - Math.abs(scrollDivCalculatedPosX);
-                                            equalDivisor = parseInt(Math.ceil(scrollingReminder / moveLimit));
-                                            if (equalDivisor > 1) {
-                                                moveLimit = scrollingReminder / equalDivisor;
-                                            } else if (equalDivisor === 1) {
-                                                moveLimit = scrollingReminder;
-                                            }
-                                            slided = false;
-                                        }
-
-                                        if (!inAnimation) {
-                                            scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
-                                            for (i = 0; i < tweenFrameNumber; i += 1) {
-                                                scrollDivCurrentPosX += (moveLimit * tween[i] * 0.01);
-                                                frames[i] = position;
-                                            }
-                                            i = 0;
-                                            inAnimation = true;
-                                        }
-
-                                        scrollDivCalculatedPosX = -frames[move_counter];
-                                        sliderPosX = Math.abs(scrollDivCalculatedPosX * scaleSliderMovementH);
-                                        ASScrollingDiv.scrollingDiv.style.left = scrollDivCalculatedPosX + 'px';
-                                        this.slider.style.left = sliderPosX+ 'px';
-                                        move_counter += 1;
-                                        timerID = setTimeout(scrollLeft, 50);
-
-                                        if (scrollDivCalculatedPosX <= -(maxScrollingDivMovement)) {
-                                            moveLimit = SAVED_MOVE_LIMIT;
-                                        }
-                                    } else {
-                                        move_counter = 0;
-                                        inAnimation = false;
-                                        clearTimeout(timerID);  // Not necessary.
-                                    }
-                                }
-                            })();
-
-                            var scrollRight = (function() {
-                               var i;
-                               var move_counter = ;
-                               return fuction() {
-                                   if (scrollDivCalculatedPosX < 0 && move_counter < tween.length) {
-                                       scrollingReminder = Math.abs(scrollDivCalculatedPosX);
-                                       equalDivisor = parseInt(Math.ceil(scrollingReminder / moveLimit));
-                                       if (equalDivisor > 1) {
-                                           moveLimit = scrollingReminder / equalDivisor;
-                                       } else if (equalDivisor === 1) {
-                                            moveLimit = scrollingReminder;
-                                       }
-                                       slided = false;
-                                   }
-
-                                   if (! inAnimation) {
-                                       scrollDivCalculatedPosX = -frames[move_counter];
-                                       sliderPosX = -(scrollDivCalculatedPosX * scaleSliderMovementH);
-                                       ASScrollingDiv.scrollingDiv.style.left = scrollDivCalculatedPosX + 'px';
-                                       this.slider.style.left = sliderPosX + 'px';
-                                       move_counter += 1;
-                                       timerID = setTimeout(scrollRight, 50);
-
-                                       if (scrollDivCalculatedPosX <= -(maxScrollingDivMovement)) {
-                                           moveLimit = SAVED_MOVE_LIMIT;
-                                       }
-                                   }
-                               }
-                            })();
 
                         } else {
                             console.log("ERROR: no slider!");
@@ -483,7 +413,113 @@
                     // pass.
                 }
             }
-        }
+        },  // doASliding() function.
+
+
+        // Scrolling to the left function.
+        scrollLeft: function() {
+            var i;
+            var move_counter = 0;
+
+            return function() {
+                if (scrollDivCalculatedPosX > -(maxScrollingDivMovement) && move_counter < tween.length) {
+
+                    if (slided) {
+                        scrollingReminder = maxScrollingDivMovement - Math.abs(scrollDivCalculatedPosX);
+                        equalDivisor = parseInt(Math.ceil(scrollingReminder / moveLimit));
+
+                        if (equalDivisor > 1) {
+                            moveLimit = scrollingReminder / equalDivisor;
+                        } else if (equalDivisor === 1) {
+                            moveLimit = scrollingReminder;
+                        }
+
+                        slided = false;
+                    }
+
+                    if (!inAnimation) {
+                        scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
+
+                        for (i = 0; i < tweenFrameNumber; i += 1) {
+                            scrollDivCurrentPosX += (moveLimit * tween[i] * 0.01);
+                            frames[i] = scrollDivCurrentPosX;
+                        }
+
+                        i = 0;
+                        inAnimation = true;
+                    }
+
+                    scrollDivCalculatedPosX = -frames[move_counter];
+                    sliderPosX = Math.abs(scrollDivCalculatedPosX * scaleSliderMovementH);
+                    ASScrollingDiv.scrollingDiv.style.left = scrollDivCalculatedPosX + 'px';
+                    this.slider.style.left = sliderPosX+ 'px';
+                    move_counter += 1;
+                    timerID = setTimeout(scrollLeft, 50);
+
+                    if (scrollDivCalculatedPosX <= -(maxScrollingDivMovement)) {
+                        moveLimit = SAVED_MOVE_LIMIT;
+                    }
+
+                } else {
+                    move_counter = 0;
+                    inAnimation = false;
+                    clearTimeout(timerID);  // Not necessary.
+                }
+            }
+        },
+
+        scrollRight: function() {
+            var i;
+            var move_counter;
+
+            return function() {
+                if (scrollDivCalculatedPosX < 0 && move_counter < tween.length) {
+
+                    if (slided) {
+                        scrollingReminder = Math.abs(scrollDivCalculatedPosX);
+                        equalDivisor = parseInt(Math.ceil(scrollingReminder / moveLimit));
+
+                        if (equalDivisor > 1) {
+                            moveLimit = scrollingReminder / equalDivisor;
+                        } else if (equalDivisor === 1) {
+                            moveLimit = scrollingReminder;
+                        }
+
+                        slided = false;
+                    }
+
+                    if (!inAnimation) {
+                        scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
+
+                        for (i = 0; i < tweenFrameNumber; i += 1) {
+                            scrollDivCurrentPosX -= (moveLimit * tween[i] * 0.01);
+                            frames[i] = scrollDivCurrentPosX;
+                        }
+
+                        inAnimation = true;
+                    }
+
+                    scrollDivCalculatedPosX = -frames[move_counter];
+                    sliderPosX = -(scrollDivCalculatedPosX * scaleSliderMovementH);
+                    ASScrollingDiv.scrollingDiv.style.left = scrollDivCalculatedPosX + 'px';
+                    this.slider.style.left = sliderPosX + 'px';
+                    move_counter += 1;
+                    timerID = setTimeout(scrollRight, 50);
+
+                    if ((scrollDivCalculatedPosX < 0.0 && scrollDivCalculatedPosX > -1.0) ||
+                        (scrollDivCalculatedPosX > 0.0 && scrollDivCalculatedPosX < 1.0)) {
+                        moveLimit = SAVED_MOVE_LIMIT;
+                    }
+
+                } else {
+                    move_counter = 0;
+                    inAnimation = false;
+                    clearTimeout(timerID);  // Not necessery.
+                }
+            }
+        }()
+
+    }  // ASNavigatorButtons object.
     }
 
 
@@ -529,8 +565,12 @@
     ASNavigatorButtons.setNavigation();
     ASMainContainer.setArticleSlider();
     ASWrapper.setWrapper();
-    ASNavigatorButtons.doASliding();
+    ASNavigatorButtons.setSlider();
 
+
+    // Adding event listeners.
+    this.upLeft.addEventListener('click', ASNavigatorButtons.scrollLeft, false);
+    this.downRight.addEventListener('click', ASNavigatorButtons.scrollRight, false);
 
 })(window);
 
@@ -734,6 +774,11 @@
     //            }
     //        }
     //    })();
+
+
+
+
+
 
     //    /* This browser approach I found on:
     //     * http://www.quirksmode.org/js/events_properties.html */
