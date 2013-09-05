@@ -56,7 +56,7 @@
         gap: 10,
 
         nRows: 1,  // This is taken into a count only if orientation is horiz.
-        nColumns: 1,  // This is taken into a count only if orientation is vert.
+        nColumns: 2,  // This is taken into a count only if orientation is vert.
         setColumnsRows: function() {
             /* if orientation is horizontal then decide how many rows you want and
              * columns have to be calculated. */
@@ -351,6 +351,10 @@
         scaleSliderMovementH: 0,
         scaleScrollDivMovementH: 0,
 
+        maxSliderMovementV: 0,
+        scaleSliderMovementV: 0,
+        scaleScrollDivMovementV: 0,
+
         sliderPosX: 0,
         sliderPosY: 0,
 
@@ -373,7 +377,6 @@
 
             if (ASBasic.orientation.current === 'Horizontal') {
                 if (ASScrollingDiv.width > ASMainContainer.width) {
-                    // +10 is added for 10 pixels that are positioning scroll div ASBasic.gap to the right.
                     this.maxScrollingDivMovement = ASScrollingDiv.width - ASMainContainer.width;
                     //console.log("maxScrollingDivMovement: " + this.maxScrollingDivMovement);
 
@@ -420,8 +423,13 @@
             } else if (ASBasic.orientation.current === 'Vertical') {
                 if (ASScrollingDiv.height > ASMainContainer.height) {
                     this.maxScrollingDivMovement = ASScrollingDiv.height - ASMainContainer.height;
-                    this.moveLimit = 2 * ASArticle.height + 2 * ASBasic.gap;
-                    this.stepDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
+                    this.moveLimit = this.articleMultiplier * ASArticle.height + this.articleMultiplier * ASBasic.gap;
+                    this.stepDivisor = parseInt(Math.ceil(this.maxScrollingDivMovement / this.moveLimit));
+
+                    // Recalculate moveLimit. !!! Very important !!!
+                    this.moveLimit = this.maxScrollingDivMovement / this.stepDivisor;
+                    console.log("moveLimit: " + this.moveLimit);
+                    this.SAVED_MOVE_LIMIT = this.moveLimit;
 
                     if (this.sliderOn) {
                         this.slider = document.getElementById('slider_div');
@@ -432,6 +440,11 @@
                             this.slider.style.height = this.sliderHeight + 'px';
                             this.sliderWidth = 7;
                             this.slider.style.width = this.sliderWidth + 'px';
+                            this.slider.style.left = 0 + 'px';
+
+                            this.maxSliderMovementV = ASMainContainer.height - this.sliderHeight;
+                            this.scaleSliderMovementV = this.maxSliderMovementV / (ASScrollingDiv.height - ASMainContainer.height);
+                            this.scaleScrollDivMovementV = (ASScrollingDiv.height - ASMainContainer.height) / this.maxSliderMovementV;
 
                         } else {
                             console.log("ERROR: no slider!");
@@ -451,73 +464,110 @@
             var stepCounter = 0;
 
             return function() {
-                //var tmp;
-                //console.log("Pressed to the LEFT");
-                // Math.floor because dealing with negative numbers!
-                if (Math.floor(ASSliderBar.scrollDivCalculatedPosX) > -(ASSliderBar.maxScrollingDivMovement) &&
-                    funcCounter < ASSliderBar.tweenFrameNumber) {
+                if (ASBasic.orientation.current === 'Horizontal') {
+                    // Math.floor because dealing with negative numbers!
+                    if (Math.floor(ASSliderBar.scrollDivCalculatedPosX) > -(ASSliderBar.maxScrollingDivMovement) &&
+                        funcCounter < ASSliderBar.tweenFrameNumber) {
 
-                    //if (ASSliderBar.slided) {
-                    //    ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
-                    //    //ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
-                    //    ASSliderBar.stepDivisor = ASSliderBar.scrollingReminder / ASSliderBar.moveLimit;
+                        //if (ASSliderBar.slided) {
+                        //    ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                        //    //ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                        //    ASSliderBar.stepDivisor = ASSliderBar.scrollingReminder / ASSliderBar.moveLimit;
 
-                    //    if (ASSliderBar.stepDivisor > 1) {
-                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.stepDivisor;
-                    //    } else if (ASSliderBar.stepDivisor === 1) {
-                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
-                    //    }
+                        //    if (ASSliderBar.stepDivisor > 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.stepDivisor;
+                        //    } else if (ASSliderBar.stepDivisor === 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                        //    }
 
-                    //    ASSliderBar.slided = false;
-                    //}
+                        //    ASSliderBar.slided = false;
+                        //}
 
-                    //console.log("stepCounter: " + stepCounter);
-                    ////console.log("stepDivisor: " + ASSliderBar.stepDivisor);
-                    //if (stepCounter === (ASSliderBar.stepDivisor - 1) && !ASSliderBar.inAnimation) {
-                    //    console.log("moveLimit: " + ASSliderBar.moveLimit);
-                    //    tmp = stepCounter * ASSliderBar.moveLimit;
-                    //    console.log("tmp: " + tmp);
-                    //    console.log("scrollDiv.width: " + ASScrollingDiv.width);
-                    //    ASSliderBar.moveLimit = ASScrollingDiv.width - ASMainContainer.width - tmp;
-                    //    console.log("new moveLimit: " + ASSliderBar.moveLimit);
-                    //}
+                        // If not in animation initialize frames.
+                        if (!ASSliderBar.inAnimation) {
+                            ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
 
-                    // If not in animation initialize frames.
-                    if (!ASSliderBar.inAnimation) {
-                        ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
+                            for (ASSliderBar.i = 0; ASSliderBar.i < ASSliderBar.tweenFrameNumber; ASSliderBar.i += 1) {
+                                ASSliderBar.scrollDivCurrentPosX += (ASSliderBar.moveLimit * ASSliderBar.tween[ASSliderBar.i] * 0.01);
+                                ASSliderBar.frames[ASSliderBar.i] = ASSliderBar.scrollDivCurrentPosX;
+                            }
 
-                        for (ASSliderBar.i = 0; ASSliderBar.i < ASSliderBar.tweenFrameNumber; ASSliderBar.i += 1) {
-                            ASSliderBar.scrollDivCurrentPosX += (ASSliderBar.moveLimit * ASSliderBar.tween[ASSliderBar.i] * 0.01);
-                            ASSliderBar.frames[ASSliderBar.i] = ASSliderBar.scrollDivCurrentPosX;
+                            ASSliderBar.i = 0;
+                            ASSliderBar.inAnimation = true;
+                            stepCounter += 1;
                         }
 
-                        ASSliderBar.i = 0;
-                        ASSliderBar.inAnimation = true;
-                        stepCounter += 1;
+                        ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
+                        // Math.abs - because slider bar never goes on negative side.
+                        // Is's minimal position is 0, max is maxScrollingDivMovement.
+                        ASSliderBar.sliderPosX = Math.abs(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
+
+                        ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
+
+                        ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
+
+                        funcCounter += 1;
+
+                        ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingLeft, 50);
+
+                    } else {
+                        funcCounter = 0;
+                        ASSliderBar.inAnimation = false;
+                        clearTimeout(ASSliderBar.timerID);  // Not necessary.
                     }
 
-                    ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
-                    // Math.abs - because slider bar never goes on negative side.
-                    // Is's minimal position is 0, max is maxScrollingDivMovement.
-                    ASSliderBar.sliderPosX = Math.abs(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
+                } else if (ASBasic.orientation.current === 'Vertical') {
+                    // Math.floor because dealing with negative numbers!
+                    if (Math.floor(ASSliderBar.scrollDivCalculatedPosY) > -(ASSliderBar.maxScrollingDivMovement) &&
+                        funcCounter < ASSliderBar.tweenFrameNumber) {
 
-                    ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
+                        //if (ASSliderBar.slided) {
+                        //    ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                        //    //ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                        //    ASSliderBar.stepDivisor = ASSliderBar.scrollingReminder / ASSliderBar.moveLimit;
 
-                    ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
+                        //    if (ASSliderBar.stepDivisor > 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.stepDivisor;
+                        /*    } else if (ASSliderBar.stepDivisor === 1) { */
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                        //    }
 
-                    funcCounter += 1;
+                        //    ASSliderBar.slided = false;
+                        //}
 
-                    ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingLeft, 50);
+                        // If not in animation initialize frames.
+                        if (!ASSliderBar.inAnimation) {
+                            ASSliderBar.scrollDivCurrentPosY = ASScrollingDiv.scrollingDiv.offsetTop * -1;
+                            console.log("scrollingdiv postition top: " + ASSliderBar.scrollDivCurrentPosY);
 
-                    //console.log("diff: " + (ASSliderBar.maxScrollingDivMovement - (stepCounter * ASSliderBar.moveLimit)));
-                    //if (ASSliderBar.scrollDivCalculatedPosX <= -(ASSliderBar.maxScrollingDivMovement)) {
-                    //    ASSliderBar.moveLimit = ASSliderBar.SAVED_MOVE_LIMIT;
-                    //}
+                            for (ASSliderBar.i = 0; ASSliderBar.i < ASSliderBar.tweenFrameNumber; ASSliderBar.i += 1) {
+                                ASSliderBar.scrollDivCurrentPosY += (ASSliderBar.moveLimit * ASSliderBar.tween[ASSliderBar.i] * 0.01);
+                                ASSliderBar.frames[ASSliderBar.i] = ASSliderBar.scrollDivCurrentPosY;
+                            }
 
-                } else {
-                    funcCounter = 0;
-                    ASSliderBar.inAnimation = false;
-                    clearTimeout(ASSliderBar.timerID);  // Not necessary.
+                            ASSliderBar.i = 0;
+                            ASSliderBar.inAnimation = true;
+                            stepCounter += 1;
+                        }
+
+                        ASSliderBar.scrollDivCalculatedPosY = -ASSliderBar.frames[funcCounter];
+                        // Math.abs - because slider bar never goes on negative side.
+                        // Is's minimal position is 0, max is maxScrollingDivMovement.
+                        ASSliderBar.sliderPosY = Math.abs(ASSliderBar.scrollDivCalculatedPosY * ASSliderBar.scaleSliderMovementV);
+
+                        ASScrollingDiv.scrollingDiv.style.top = ASSliderBar.scrollDivCalculatedPosY + 'px';
+
+                        ASSliderBar.slider.style.top = ASSliderBar.sliderPosY + 'px';
+
+                        funcCounter += 1;
+
+                        ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingLeft, 50);
+
+                    } else {
+                        funcCounter = 0;
+                        ASSliderBar.inAnimation = false;
+                        clearTimeout(ASSliderBar.timerID);  // Not necessary.
+                    }
                 }
             }
         }(),  // END of scrollingLeft function
@@ -526,49 +576,95 @@
             var funcCounter = 0;
 
             return function() {
-                console.log("Pressed to the RIGHT");
-                if (ASSliderBar.scrollDivCalculatedPosX < 0.0 && funcCounter < ASSliderBar.tweenFrameNumber) {
+                //console.log("Pressed to the RIGHT");
+                if (ASBasic.orientation.current === 'Horizontal') {
+                    if (Math.ceil(ASSliderBar.scrollDivCalculatedPosX) < 0 && funcCounter < ASSliderBar.tweenFrameNumber) {
 
-                    //if (ASSliderBar.slided) {
-                    //    ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
-                    //    ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                        //if (ASSliderBar.slided) {
+                        //    ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                        //    ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
 
-                    //    if (ASSliderBar.stepDivisor > 1) {
-                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.stepDivisor;
-                    //    } else if (stepDivisor === 1) {
-                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
-                    //    }
+                        //    if (ASSliderBar.stepDivisor > 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.stepDivisor;
+                        //    } else if (stepDivisor === 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                        //    }
 
-                    //    ASSliderBar.slided = false;
-                    //}
+                        //    ASSliderBar.slided = false;
+                        //}
 
-                    if (!ASSliderBar.inAnimation) {
-                        ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
+                        if (!ASSliderBar.inAnimation) {
+                            ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
 
-                        for (i = 0; i < ASSliderBar.tweenFrameNumber; i += 1) {
-                            ASSliderBar.scrollDivCurrentPosX -= (ASSliderBar.moveLimit * ASSliderBar.tween[i] * 0.01);
-                            ASSliderBar.frames[i] = ASSliderBar.scrollDivCurrentPosX;
+                            for (i = 0; i < ASSliderBar.tweenFrameNumber; i += 1) {
+                                ASSliderBar.scrollDivCurrentPosX -= (ASSliderBar.moveLimit * ASSliderBar.tween[i] * 0.01);
+                                ASSliderBar.frames[i] = ASSliderBar.scrollDivCurrentPosX;
+                            }
+
+                            ASSliderBar.inAnimation = true;
                         }
 
-                        ASSliderBar.inAnimation = true;
+                        ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
+                        ASSliderBar.sliderPosX = -(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
+                        ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
+                        ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
+                        funcCounter += 1;
+                        ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingRight, 50);
+
+                        //if ((ASSliderBar.scrollDivCalculatedPosX < 0.0 && ASSliderBar.scrollDivCalculatedPosX > -1.0) ||
+                        //    (ASSliderBar.scrollDivCalculatedPosX > 0.0 && ASSliderBar.scrollDivCalculatedPosX < 1.0)) {
+                        //    ASSliderBar.moveLimit = ASSliderBar.SAVED_MOVE_LIMIT;
+                        //}
+
+                    } else {
+                        funcCounter = 0;
+                        ASSliderBar.inAnimation = false;
+                        clearTimeout(ASSliderBar.timerID);  // Not necessery.
                     }
+                } else if (ASBasic.orientation.current === 'Vertical') {
+                    if (Math.ceil(ASSliderBar.scrollDivCalculatedPosY) < 0 && funcCounter < ASSliderBar.tweenFrameNumber) {
 
-                    ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
-                    ASSliderBar.sliderPosX = -(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
-                    ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
-                    ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
-                    funcCounter += 1;
-                    ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingRight, 50);
+                        //if (ASSliderBar.slided) {
+                        //    ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                        //    ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
 
-                    //if ((ASSliderBar.scrollDivCalculatedPosX < 0.0 && ASSliderBar.scrollDivCalculatedPosX > -1.0) ||
-                    //    (ASSliderBar.scrollDivCalculatedPosX > 0.0 && ASSliderBar.scrollDivCalculatedPosX < 1.0)) {
-                    //    ASSliderBar.moveLimit = ASSliderBar.SAVED_MOVE_LIMIT;
-                    //}
+                        //    if (ASSliderBar.stepDivisor > 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.stepDivisor;
+                        //    } else if (stepDivisor === 1) {
+                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                        //    }
 
-                } else {
-                    funcCounter = 0;
-                    ASSliderBar.inAnimation = false;
-                    clearTimeout(ASSliderBar.timerID);  // Not necessery.
+                        //    ASSliderBar.slided = false;
+                        //}
+
+                        if (!ASSliderBar.inAnimation) {
+                            ASSliderBar.scrollDivCurrentPosY = ASScrollingDiv.scrollingDiv.offsetTop * -1;
+
+                            for (i = 0; i < ASSliderBar.tweenFrameNumber; i += 1) {
+                                ASSliderBar.scrollDivCurrentPosY -= (ASSliderBar.moveLimit * ASSliderBar.tween[i] * 0.01);
+                                ASSliderBar.frames[i] = ASSliderBar.scrollDivCurrentPosY;
+                            }
+
+                            ASSliderBar.inAnimation = true;
+                        }
+
+                        ASSliderBar.scrollDivCalculatedPosY = -ASSliderBar.frames[funcCounter];
+                        ASSliderBar.sliderPosY = -(ASSliderBar.scrollDivCalculatedPosY * ASSliderBar.scaleSliderMovementV);
+                        ASScrollingDiv.scrollingDiv.style.top = ASSliderBar.scrollDivCalculatedPosY + 'px';
+                        ASSliderBar.slider.style.top = ASSliderBar.sliderPosY + 'px';
+                        funcCounter += 1;
+                        ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingRight, 50);
+
+                        //if ((ASSliderBar.scrollDivCalculatedPosX < 0.0 && ASSliderBar.scrollDivCalculatedPosX > -1.0) ||
+                        //    (ASSliderBar.scrollDivCalculatedPosX > 0.0 && ASSliderBar.scrollDivCalculatedPosX < 1.0)) {
+                        //    ASSliderBar.moveLimit = ASSliderBar.SAVED_MOVE_LIMIT;
+                        //}
+
+                    } else {
+                        funcCounter = 0;
+                        ASSliderBar.inAnimation = false;
+                        clearTimeout(ASSliderBar.timerID);  // Not necessery.
+                    }
                 }
             }
         }()
@@ -610,7 +706,7 @@
      * The actual construction of slider.  *
      * *********************************** */
 
-    ASBasic.orientation.setOrientation(1);
+    ASBasic.orientation.setOrientation(0);
     console.log("Orientation: " + ASBasic.orientation.current);
 
     ASMainContainer.setMainContainer();
