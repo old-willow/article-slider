@@ -379,7 +379,7 @@
 
                     /* Partitioning max movement of scrolling div per one click. */
                     this.moveLimit = this.articleMultiplier * ASArticle.width + this.articleMultiplier * ASBasic.gap;
-                    this.SAVED_MOVE_LIMIT = this.moveLimit;
+                    //this.SAVED_MOVE_LIMIT = this.moveLimit;
                     //console.log("moveLimit: " + this.moveLimit);
                     //this.stepDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
                     this.stepDivisor = parseInt(Math.ceil(this.maxScrollingDivMovement / this.moveLimit));
@@ -389,6 +389,7 @@
                     // Recalculated moveLimit for precission. !!! Very important !!!
                     this.moveLimit = this.maxScrollingDivMovement / this.stepDivisor;
                     //console.log("moveLimit: " + this.moveLimit);
+                    this.SAVED_MOVE_LIMIT = this.moveLimit;
 
                     if (this.sliderOn) {
                         // Creating a slider bar.
@@ -446,12 +447,12 @@
 
         // Scrolling to the left function.
         scrollingLeft: function() {
-            var move_counter = 0;
+            var funcCounter = 0;  // recursive function call counter.
 
             return function() {
                 //console.log("Pressed to the LEFT");
                 if (ASSliderBar.scrollDivCalculatedPosX > -(ASSliderBar.maxScrollingDivMovement) &&
-                    move_counter < ASSliderBar.tweenFrameNumber) {
+                    funcCounter < ASSliderBar.tweenFrameNumber) {
 
                     //if (ASSliderBar.slided) {
                     //    ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
@@ -480,15 +481,22 @@
                         ASSliderBar.inAnimation = true;
                     }
 
-                    ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[move_counter];
-                    // Math.abs - because slider bar never goes on negative side. Is's minimal position is 0, max is maxScrollingDivMovement.
+                    ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
+                    // Math.abs - because slider bar never goes on negative side.
+                    // Is's minimal position is 0, max is maxScrollingDivMovement.
                     ASSliderBar.sliderPosX = Math.abs(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
 
                     ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
 
                     ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
 
-                    move_counter += 1;
+                    console.log("stepDivisor: " + ASSliderBar.stepDivisor);
+                    if (funcCounter === (ASSliderBar.stepDivisor - 1)) {
+                        ASSliderBar.moveLimit = ASScrollingDiv.scrollingDiv.offsetLeft + ASScrollingDiv.width;
+                        console.log("new moveLimit: " + ASSliderBar.moveLimit);
+                    }
+
+                    funcCounter += 1;
                     ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingLeft, 50);
 
                     //if (ASSliderBar.scrollDivCalculatedPosX <= -(ASSliderBar.maxScrollingDivMovement)) {
@@ -496,7 +504,7 @@
                     //}
 
                 } else {
-                    move_counter = 0;
+                    funcCounter = 0;
                     ASSliderBar.inAnimation = false;
                     clearTimeout(ASSliderBar.timerID);  // Not necessary.
                 }
@@ -504,11 +512,11 @@
         }(),  // END of scrollingLeft function
 
         scrollingRight: function() {
-            var move_counter = 0;
+            var funcCounter = 0;
 
             return function() {
                 console.log("Pressed to the RIGHT");
-                if (ASSliderBar.scrollDivCalculatedPosX < 0.0 && move_counter < ASSliderBar.tweenFrameNumber) {
+                if (ASSliderBar.scrollDivCalculatedPosX < 0.0 && funcCounter < ASSliderBar.tweenFrameNumber) {
 
                     //if (ASSliderBar.slided) {
                     //    ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
@@ -534,11 +542,11 @@
                         ASSliderBar.inAnimation = true;
                     }
 
-                    ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[move_counter];
+                    ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
                     ASSliderBar.sliderPosX = -(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
                     ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
                     ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
-                    move_counter += 1;
+                    funcCounter += 1;
                     ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingRight, 50);
 
                     if ((ASSliderBar.scrollDivCalculatedPosX < 0.0 && ASSliderBar.scrollDivCalculatedPosX > -1.0) ||
@@ -547,7 +555,7 @@
                     }
 
                 } else {
-                    move_counter = 0;
+                    funcCounter = 0;
                     ASSliderBar.inAnimation = false;
                     clearTimeout(ASSliderBar.timerID);  // Not necessery.
                 }
@@ -701,11 +709,11 @@
     //    var slided = false;  // Check if slider is moved. If true have to recalculate move_limit varible!
 
     //    var scroll_left = (function() {
-    //        var move_counter = 0;
+    //        var funcCounter = 0;
 
     //        return function() {
     //            if (scroll_div_x_pos > -(scroll_div_max_movement) &&
-    //                move_counter < tween.length) {
+    //                funcCounter < tween.length) {
 
     //                if (slided) {
     //                    /* Recalculate move_limit. */
@@ -735,12 +743,12 @@
     //                    in_animation = true;
     //                }
 
-    //                scroll_div_x_pos = -frames[move_counter];
+    //                scroll_div_x_pos = -frames[funcCounter];
     //                slider_x_pos = Math.abs(scroll_div_x_pos * scale_slider_movement);
     //                console.log("scroll_div_x_pos: " + scroll_div_x_pos);
     //                scroll_div.style.left = scroll_div_x_pos + "px";
     //                slider_bar.style.left = slider_x_pos + "px";
-    //                move_counter += 1;
+    //                funcCounter += 1;
     //                // Recursion.
     //                timer_id = setTimeout(scroll_left, 50);
 
@@ -749,7 +757,7 @@
     //                }
 
     //            } else {
-    //                move_counter = 0;
+    //                funcCounter = 0;
     //                in_animation = false;
     //                clearTimeout(timer_id);  // Not necessary.
     //            }
@@ -757,10 +765,10 @@
     //    })();
 
     //    var scroll_right = (function() {
-    //        var move_counter = 0;
+    //        var funcCounter = 0;
 
     //        return function() {
-    //            if (scroll_div_x_pos < 0 && move_counter < tween.length) {
+    //            if (scroll_div_x_pos < 0 && funcCounter < tween.length) {
 
     //                if (slided) {
     //                    /* Recalculate move_limit. */
@@ -784,11 +792,11 @@
     //                    in_animation = true;
     //                }
 
-    //                scroll_div_x_pos = -frames[move_counter];
+    //                scroll_div_x_pos = -frames[funcCounter];
     //                slider_x_pos = -(scroll_div_x_pos * scale_slider_movement);
     //                scroll_div.style.left = scroll_div_x_pos + "px";
     //                slider_bar.style.left = slider_x_pos + "px";
-    //                move_counter += 1;
+    //                funcCounter += 1;
     //                // Recursion.
     //                timer_id = setTimeout(scroll_right, 50);
 
@@ -801,7 +809,7 @@
 
     //            } else {
     //                console.log("Hey, conditions don't match.");
-    //                move_counter = 0;
+    //                funcCounter = 0;
     //                in_animation = false;
     //                clearTimeout(timer_id);
     //            }
