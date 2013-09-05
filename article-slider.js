@@ -159,8 +159,14 @@
 
                 this.scrollingDiv.style.width = this.width + 'px';
                 this.scrollingDiv.style.height = this.height + 'px';
-                this.scrollingDiv.style.top = ASBasic.gap + 'px';
-                this.scrollingDiv.style.left = ASBasic.gap + 'px';
+
+                if (ASBasic.orientation.current === 'Horizontal') {
+                    this.scrollingDiv.style.left = 0 + 'px';
+                    this.scrollingDiv.style.top = ASBasic.gap + 'px';
+                } else if (ASBasic.orientation.current === 'Vertical') {
+                    this.scrollingDiv.style.top = 0 + 'px';
+                    this.scrollingDiv.style.left = ASBasic.gap + 'px';
+                }
 
                 this.distributeArticles();
 
@@ -323,9 +329,9 @@
 
         maxScrollingDivMovement: 0,
         moveLimit: 0,
-        equalDivisor: 0,
-
         SAVED_MOVE_LIMIT: 0,
+        stepDivisor: 0,
+
         scrollingReminder: 0,
 
         scrollDivCalculatedPosX: 0,  // var scroll_div_x_pos
@@ -352,31 +358,38 @@
         clickX: 0,
         diffX: 0,
         lastX: 0,
-        slided: false, // Check if slider is moved. If true have to recalculate move_limit varible!
+        slided: false, // Check if slider is moved. If true have to recalculate moveLimit varible!
 
         sliderWidth: 0,
         sliderHeight: 0,
 
+        articleMultiplier: 2,
+
+        i: 0,  // this is a simple object iterator.
+
         setSlider: function() {
-            /* Maybe declaration of variables should be moved here on top of the function. */
             this.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
             this.tweenFrameNumber = this.tween.length;
 
             if (ASBasic.orientation.current === 'Horizontal') {
                 if (ASScrollingDiv.width > ASMainContainer.width) {
+                    // +10 is added for 10 pixels that are positioning scroll div ASBasic.gap to the right.
                     this.maxScrollingDivMovement = ASScrollingDiv.width - ASMainContainer.width;
-                    //console.log("main div: " + ASMainContainer.width);
-                    //console.log("sliding div: " + ASScrollingDiv.width);
-                    //console.log("max sliding movement: " + maxMovement);
+                    //console.log("maxScrollingDivMovement: " + this.maxScrollingDivMovement);
 
                     /* Partitioning max movement of scrolling div per one click. */
-                    this.moveLimit = 2 * ASArticle.width + 2 * ASBasic.gap;
+                    this.moveLimit = this.articleMultiplier * ASArticle.width + this.articleMultiplier * ASBasic.gap;
                     this.SAVED_MOVE_LIMIT = this.moveLimit;
-                    this.equalDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
-                    //console.log("move limit: " + moveLimit);
-                    //console.log("equal divisor: " + equalDivisor);
+                    //console.log("moveLimit: " + this.moveLimit);
+                    //this.stepDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
+                    this.stepDivisor = parseInt(Math.ceil(this.maxScrollingDivMovement / this.moveLimit));
+                    //this.stepDivisor = this.maxScrollingDivMovement / this.moveLimit;
+                    //console.log("stepDivisor: " + this.stepDivisor);
 
-                    //console.log("sliderOn value: " + this.sliderOn);
+                    // Recalculated moveLimit for precission. !!! Very important !!!
+                    this.moveLimit = this.maxScrollingDivMovement / this.stepDivisor;
+                    //console.log("moveLimit: " + this.moveLimit);
+
                     if (this.sliderOn) {
                         // Creating a slider bar.
                         this.slider = document.getElementById('slider_div');
@@ -388,6 +401,7 @@
                             this.slider.style.width = this.sliderWidth + 'px';
                             this.sliderHeight = 7;
                             this.slider.style.height = this.sliderHeight + 'px';
+                            this.slider.style.left = 0 + 'px';
 
                             this.maxSliderMovementH = ASMainContainer.width - this.sliderWidth;
                             this.scaleSliderMovementH = this.maxSliderMovementH / (ASScrollingDiv.width - ASMainContainer.width);
@@ -406,7 +420,7 @@
                 if (ASScrollingDiv.height > ASMainContainer.height) {
                     this.maxScrollingDivMovement = ASScrollingDiv.height - ASMainContainer.height;
                     this.moveLimit = 2 * ASArticle.height + 2 * ASBasic.gap;
-                    this.equalDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
+                    this.stepDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
 
                     if (this.sliderOn) {
                         this.slider = document.getElementById('slider_div');
@@ -432,51 +446,54 @@
 
         // Scrolling to the left function.
         scrollingLeft: function() {
-            var i;
             var move_counter = 0;
 
             return function() {
-                console.log("Pressed to the LEFT");
-                //console.log("scrollDivCalculatedPosX: " + ASSliderBar.scrollDivCalculatedPosX);
-                //console.log("maxScrollingDivMovement: " + ASSliderBar.maxScrollingDivMovement);
-                if (ASSliderBar.scrollDivCalculatedPosX > -(ASSliderBar.maxScrollingDivMovement) && move_counter < ASSliderBar.tweenFrameNumber) {
+                //console.log("Pressed to the LEFT");
+                if (ASSliderBar.scrollDivCalculatedPosX > -(ASSliderBar.maxScrollingDivMovement) &&
+                    move_counter < ASSliderBar.tweenFrameNumber) {
 
-                    console.log("slided left" + ASSliderBar.slided);
-                    if (ASSliderBar.slided) {
-                        ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
-                        ASSliderBar.equalDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                    //if (ASSliderBar.slided) {
+                    //    ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                    //    //ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                    //    ASSliderBar.stepDivisor = ASSliderBar.scrollingReminder / ASSliderBar.moveLimit;
 
-                        if (ASSliderBar.equalDivisor > 1) {
-                            ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.equalDivisor;
-                        } else if (ASSliderBar.equalDivisor === 1) {
-                            ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
-                        }
+                    //    if (ASSliderBar.stepDivisor > 1) {
+                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.stepDivisor;
+                    //    } else if (ASSliderBar.stepDivisor === 1) {
+                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                    //    }
 
-                        ASSliderBar.slided = false;
-                    }
+                    //    ASSliderBar.slided = false;
+                    //}
 
+                    // If not in animation initialize frames.
                     if (!ASSliderBar.inAnimation) {
                         ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
 
-                        for (i = 0; i < ASSliderBar.tweenFrameNumber; i += 1) {
-                            ASSliderBar.scrollDivCurrentPosX += (ASSliderBar.moveLimit * ASSliderBar.tween[i] * 0.01);
-                            ASSliderBar.frames[i] = ASSliderBar.scrollDivCurrentPosX;
+                        for (ASSliderBar.i = 0; ASSliderBar.i < ASSliderBar.tweenFrameNumber; ASSliderBar.i += 1) {
+                            ASSliderBar.scrollDivCurrentPosX += (ASSliderBar.moveLimit * ASSliderBar.tween[ASSliderBar.i] * 0.01);
+                            ASSliderBar.frames[ASSliderBar.i] = ASSliderBar.scrollDivCurrentPosX;
                         }
 
-                        i = 0;
+                        ASSliderBar.i = 0;
                         ASSliderBar.inAnimation = true;
                     }
 
                     ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[move_counter];
+                    // Math.abs - because slider bar never goes on negative side. Is's minimal position is 0, max is maxScrollingDivMovement.
                     ASSliderBar.sliderPosX = Math.abs(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
+
                     ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
-                    ASSliderBar.slider.style.left = ASSliderBar.sliderPosX+ 'px';
+
+                    ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + 'px';
+
                     move_counter += 1;
                     ASSliderBar.timerID = setTimeout(ASSliderBar.scrollingLeft, 50);
 
-                    if (ASSliderBar.scrollDivCalculatedPosX <= -(ASSliderBar.maxScrollingDivMovement)) {
-                        ASSliderBar.moveLimit = ASSliderBar.SAVED_MOVE_LIMIT;
-                    }
+                    //if (ASSliderBar.scrollDivCalculatedPosX <= -(ASSliderBar.maxScrollingDivMovement)) {
+                    //    ASSliderBar.moveLimit = ASSliderBar.SAVED_MOVE_LIMIT;
+                    //}
 
                 } else {
                     move_counter = 0;
@@ -487,25 +504,24 @@
         }(),  // END of scrollingLeft function
 
         scrollingRight: function() {
-            var i;
-            var move_counter;
+            var move_counter = 0;
 
             return function() {
                 console.log("Pressed to the RIGHT");
-                if (ASSliderBar.scrollDivCalculatedPosX < 0.0 && move_counter < ASSliderBar.tween.length) {
+                if (ASSliderBar.scrollDivCalculatedPosX < 0.0 && move_counter < ASSliderBar.tweenFrameNumber) {
 
-                    if (ASSliderBar.slided) {
-                        ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
-                        ASSliderBar.equalDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                    //if (ASSliderBar.slided) {
+                    //    ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                    //    ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
 
-                        if (ASSliderBar.equalDivisor > 1) {
-                            ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.equalDivisor;
-                        } else if (equalDivisor === 1) {
-                            ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
-                        }
+                    //    if (ASSliderBar.stepDivisor > 1) {
+                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.stepDivisor;
+                    //    } else if (stepDivisor === 1) {
+                    //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                    //    }
 
-                        ASSliderBar.slided = false;
-                    }
+                    //    ASSliderBar.slided = false;
+                    //}
 
                     if (!ASSliderBar.inAnimation) {
                         ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
