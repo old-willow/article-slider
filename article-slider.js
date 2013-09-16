@@ -347,6 +347,8 @@
         timerID: 0,
         frames: [],
 
+        scrolling: false,  // Is scrolling going on? Is yes disable clicking event.
+
         maxSliderMovementH: 0,
         scaleSliderMovementH: 0,
         scaleScrollDivMovementH: 0,
@@ -358,11 +360,16 @@
         sliderPosX: 0,
         sliderPosY: 0,
 
-        readX: 0,
-        clickX: 0,
-        diffX: 0,
-        lastX: 0,
-        slided: false, // Check if slider is moved. If true have to recalculate moveLimit varible!
+        up: true,  // event: if mouse button is not pressed down.
+        move: false,  // event: 
+
+        readX: 0,   // event: cursor x position on the screen.
+        lastX: 0,   // event: previously clicked x position.
+        clickX: 0,  // event: x position where is clicked.
+        diffX: 0,   // event: lasX - readX
+        // Check if slider is moved manualy.
+        // If true, have to recalculate dramaticaly moveLimit variable!
+        slided: false,
 
         sliderWidth: 0,
         sliderHeight: 0,
@@ -433,6 +440,7 @@
 
                     if (this.sliderOn) {
                         this.slider = document.getElementById('slider_div');
+
                         if (typeof this.slider !== null) {
                             this.slider.setAttribute('class', 'slider_div_vertical');
                             this.slider.style.visibility = 'visible';
@@ -458,6 +466,8 @@
         },  // doASliding() function.
 
 
+        /* Following functions can't use this keyword because they are attached to elements as event listeners.
+         * Instead use function name as namespace.*/
         // Scrolling to the left function.
         scrollingLeft: function() {
             var funcCounter = 0;  // recursive function call counter!
@@ -469,19 +479,20 @@
                     if (Math.floor(ASSliderBar.scrollDivCalculatedPosX) > -(ASSliderBar.maxScrollingDivMovement) &&
                         funcCounter < ASSliderBar.tweenFrameNumber) {
 
-                        //if (ASSliderBar.slided) {
-                        //    ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
-                        //    //ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
-                        //    ASSliderBar.stepDivisor = ASSliderBar.scrollingReminder / ASSliderBar.moveLimit;
+                        if (ASSliderBar.slided) {
+                            //ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                            ASSliderBar.scrollingReminder = ASSliderBar.maxScrollingDivMovement - ASSliderBar.scrollDivCalculatedPosX;
+                            //ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                            ASSliderBar.stepDivisor = ASSliderBar.scrollingReminder / ASSliderBar.moveLimit;
 
-                        //    if (ASSliderBar.stepDivisor > 1) {
-                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.stepDivisor;
-                        //    } else if (ASSliderBar.stepDivisor === 1) {
-                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
-                        //    }
+                            if (ASSliderBar.stepDivisor > 1) {
+                                ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / this.stepDivisor;
+                            } else if (ASSliderBar.stepDivisor === 1) {
+                                ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                            }
 
-                        //    ASSliderBar.slided = false;
-                        //}
+                            ASSliderBar.slided = false;
+                        }
 
                         // If not in animation initialize frames.
                         if (!ASSliderBar.inAnimation) {
@@ -499,7 +510,7 @@
 
                         ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
                         // Math.abs - because slider bar never goes on negative side.
-                        // Is's minimal position is 0, max is maxScrollingDivMovement.
+                        // Is's minimal position is 0, max is maxSliderMovementH.
                         ASSliderBar.sliderPosX = Math.abs(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
 
                         ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
@@ -580,18 +591,18 @@
                 if (ASBasic.orientation.current === 'Horizontal') {
                     if (Math.ceil(ASSliderBar.scrollDivCalculatedPosX) < 0 && funcCounter < ASSliderBar.tweenFrameNumber) {
 
-                        //if (ASSliderBar.slided) {
-                        //    ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
-                        //    ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
+                        if (ASSliderBar.slided) {
+                            ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
+                            ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
 
-                        //    if (ASSliderBar.stepDivisor > 1) {
-                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.stepDivisor;
-                        //    } else if (stepDivisor === 1) {
-                        //        ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
-                        //    }
+                            if (ASSliderBar.stepDivisor > 1) {
+                                ASSliderBar.moveLimit = ASSliderBar.scrollingReminder / ASSliderBar.stepDivisor;
+                            } else if (ASSliderBar.stepDivisor === 1) {
+                                ASSliderBar.moveLimit = ASSliderBar.scrollingReminder;
+                            }
 
-                        //    ASSliderBar.slided = false;
-                        //}
+                            ASSliderBar.slided = false;
+                        }
 
                         if (!ASSliderBar.inAnimation) {
                             ASSliderBar.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft * -1;
@@ -667,8 +678,142 @@
                     }
                 }
             }
-        }()
-    }
+        }(),
+
+        sliderMousedown: function(e) {
+            /* This function saves the clicked postion of mouse's 'click' event and sets this.up to false. */
+            if (!e) {
+                var e = window.event;
+            }
+            console.log("MouseDown Event");
+
+            ASSliderBar.slider.style.background = '#800000';
+
+            if (e.pageX) {  // Chrome, Opera
+                //console.log('chrome/opera');
+                //console.log('mousedown');
+                //console.log("bla bal " + this.up);
+                ASSliderBar.up = false;
+                //console.log("up: ", up);
+                ASSliderBar.clickX = e.pageX;  // Initializes the first click position.
+                ASSliderBar.lastX = ASSliderBar.clickX;  // Momorize this position for the future calculations.
+                //console.log('click_x :' + click_x);
+
+            } else if (e.clientX) {  // Firefox!
+                //console.log('firefox');
+                ASSliderBar.clickX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+                ASSliderBar.lastX = ASSliderBar.clickX;
+            }
+        },
+
+        sliderMousemove: function(e) {
+            /* This function works only if there was mousedown event on the slider_div element.
+             * It is attached to the document element. */
+            //console.log("up: " + this.up);
+            if (!ASSliderBar.up) {  // If holding down the button on slider bar.
+                if (!e) {
+                    var e = window.event;
+                }
+
+                console.log("MouseMove Event");
+                ASSliderBar.slided = true;
+                //console.log(ASSliderBar.slider);
+
+                // Calculating the slider_div position and moving it also.
+                if (e.pageX) {
+                    //console.log("I'm here!");
+                    //console.log("readX: " + this.readX);
+                    ASSliderBar.readX = e.pageX;
+                } else if (e.clientX) {
+                    ASSliderBar.readX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+                }
+                //console.log('read_x :' + this.readX);
+
+                // Moving slider bar to the RIGHT.
+                if ((ASSliderBar.readX > ASSliderBar.lastX) &&
+                    ASSliderBar.sliderPosX <= ASSliderBar.maxSliderMovementH &&
+                    ASSliderBar.scrollDivCalculatedPosX > -(ASSliderBar.maxScrollingDivMovement)) {
+
+                    ASSliderBar.diffX = (ASSliderBar.readX - ASSliderBar.lastX);  // Difference between current postion and last
+                    //console.log('diff_x: ' + this.diffX);
+
+                    if ((ASSliderBar.sliderPosX + ASSliderBar.diffX) <= ASSliderBar.maxSliderMovementH) {
+                        ASSliderBar.sliderPosX += ASSliderBar.diffX;
+                        ASSliderBar.scrollDivCalculatedPosX = -(ASSliderBar.sliderPosX * ASSliderBar.scaleScrollDivMovementH);
+
+                    } else if ((ASSliderBar.sliderPosX + ASSliderBar.diffX) > ASSliderBar.maxSliderMovementH) {
+                        ASSliderBar.sliderPosX = ASSliderBar.maxSliderMovementH;
+                        ASSliderBar.scrollDivCalculatedPosX = -(ASSliderBar.maxScrollingDivMovement);
+                    }
+                    //console.log('moving right: slider_x_pos: ' + this.sliderPosX);
+                    ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + "px";
+                    ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + "px";
+                    ASSliderBar.lastX = ASSliderBar.readX;
+                    //console.log("pos slider " + ASSliderBar.sliderPosX);
+
+                // Moving slider bar to the LEFT.
+                } else if ((ASSliderBar.readX < ASSliderBar.lastX) &&
+                            ASSliderBar.sliderPosX >= 0 &&
+                            ASSliderBar.scrollDivCalculatedPosX < 0) {
+
+                    ASSliderBar.diffX = (ASSliderBar.lastX - ASSliderBar.readX);
+
+                    if ((ASSliderBar.sliderPosX - ASSliderBar.diffX) >= 0) {
+                        ASSliderBar.sliderPosX -= ASSliderBar.diffX;
+                        ASSliderBar.scrollDivCalculatedPosX = -(ASSliderBar.sliderPosX * ASSliderBar.scaleScrollDivMovementH);
+                    } else if ((ASSliderBar.sliderPosX - ASSliderBar.diffX) < 0) {
+                        //console.log('left zerozero!');
+                        //console.log("haho");
+                        ASSliderBar.sliderPosX = 0;
+                        ASSliderBar.scrollDivCurrentPosX = 0;
+                    }
+                    //console.log('moving left: slider_x_pos: ' + this.sliderPosX);
+                    //console.log("pos slider " + ASSliderBar.sliderPosX);
+                    ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + "px";
+                    ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + "px";
+                    ASSliderBar.lastX = ASSliderBar.readX;
+                }
+            }
+        },
+
+        sliderMouseup: function(e) {
+            /*
+             * This function is only executed if there was a mousedown event on
+             * slider_div element and it turned off the this.up to false.
+             * It is attached to the document element.
+             * */
+            if (!e) {
+                var e = window.event;
+            }
+
+            if (!ASSliderBar.up) {
+                ASSliderBar.up = true;
+                ASSliderBar.clickX = 0;
+                ASSliderBar.lastX = 0;
+                ASSliderBar.diffX = 0;
+                console.log('MouseUp Event');
+                ASSliderBar.slider.style.background = '#4c0000';
+            }
+        },
+
+        /* Selecting element are not possible on this page.
+         * This is attached to the document.body element. */
+        preventSelecting: function(e) {
+            if (!ASSliderBar.up) {
+                if (!e) {
+                    var e = window.event;
+                }
+                // This part is for canceling selection.
+                if ('cancelable' in e) {  // Firefox allways gives true.
+                    if (e.cancelable) {
+                        e.preventDefault();
+                    }
+                } else {
+                    e.returnValue = false;  // Firefox doesn't support this.
+                }
+            }
+        }
+    }  // END Slider object.
 
 
     var ASWrapper = {
@@ -715,11 +860,26 @@
     ASWrapper.setWrapper();
     ASSliderBar.setSlider();
 
-    //console.log(ar[1]);
-    // Adding event listeners.
+    // Adding event listeners to buttons.
     navButtons[0].addEventListener('click', ASSliderBar.scrollingLeft, false);
     navButtons[1].addEventListener('click', ASSliderBar.scrollingRight, false);
 
+    // Adding event listeners to slider bar.
+    ASSliderBar.slider.addEventListener('mousedown', ASSliderBar.sliderMousedown, false);
+    document.addEventListener('mouseup', ASSliderBar.sliderMouseup, false);
+    document.addEventListener('mousemove', ASSliderBar.sliderMousemove, false);
+    document.addEventListener('selectstart', ASSliderBar.preventSelecting, false);
+
+    //    // Decoration of slider_bar: coloring...
+    ASSliderBar.slider.addEventListener('mouseover', function() {
+        ASSliderBar.slider.style.background = '#800000';
+    }, false);
+
+    ASSliderBar.slider.addEventListener('mouseout', function() {
+       // if (this.up) {
+            ASSliderBar.slider.style.background = '#4c0000';
+       // }
+    }, false);
 })(window);
 
     //    throw {
