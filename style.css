@@ -112,6 +112,9 @@ body {
     border: 1px dashed #808080;
     cursor: pointer;/**/
 }
+.navigation_hide {
+    display: none;
+}
 
 #up_left_nav {
     /*position: relative;/**/

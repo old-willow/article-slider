@@ -4,7 +4,7 @@
  * date: Nov 13, 2012
  * last milestone: March 21, 2013
  * last update: Aug 23, 2013 ---
- * last update: Jan 10, 2013
+ * last update: Jan 11, 2013
  */
 
 /* This is a prototype project. Building kind of API.*/
@@ -40,7 +40,7 @@
     // ]]]
 
 
-    var ASBasic = { // [[[
+    var ASBasic = { // [[[1
         /* Basic object for setup a slider structure. */
         /* Default setting is a horizontal orientation. */
         orientation: {
@@ -57,9 +57,9 @@
          * and space between article and scroll_div. */
         gap: 10,
 
-        nRows: 1,  // This is taken into a count only if orientation is horizontal.
-        nColumns: 2,  // This is taken into a count only if orientation is vertical.
-        setColumnsRows: function() {  // [[[
+        nRows: 3,  // This is taken into a count only if orientation is horizontal.
+        nColumns: 1,  // This is taken into a count only if orientation is vertical.
+        setColumnsRows: function() {  // [[[2
             /* if orientation is horizontal then decide how many rows you want and
              * columns have to be calculated. */
             if (this.orientation.current === 'Horizontal') {
@@ -86,8 +86,7 @@
                 console.log("ERROR: Can't calculate columns or rows for some error accoured!");
             }
         }  // ]]]
-    }
-    // ]]]
+    } // ]]]
 
 
     var ASMainContainer = {  // [[[
@@ -138,6 +137,9 @@
             return this.mainContainer;
         },
 
+        /* ERROR: Navigation buttons object is uses scrolling div
+         * width and height properties before scrolling div is created!!!!!!!!
+         * CHANGE ORDER */
         setArticleSlider: function() {
             this.setMainContainer();
             ASScrollingDiv.setScrollingDiv();
@@ -146,20 +148,24 @@
     // ]]]
 
 
-    var ASScrollingDiv = {  // [[[
+    var ASScrollingDiv = {  // [[[1
         width: 0,
         height: 0,
 
         scrollingDiv: null,
 
-        setScrollingDiv: function() {  // [[[1
+        setScrollingDiv: function() {  // [[[2
             this.scrollingDiv = document.getElementById('scrolling_div');
 
+            //console.log("scrolling div: " + this.scrollingDiv.id);
+
             if (typeof this.scrollingDiv !== null) {
+                console.log("calculating scrolling div");
                 this.width = (ASBasic.nColumns * ASArticle.width) + ((ASBasic.nColumns - 1) * ASBasic.gap);
                 this.height = (ASBasic.nRows * ASArticle.height) + ((ASBasic.nRows - 1) * ASBasic.gap);
-                //console.log("Slider Width: " + this.width);
-                //console.log("Slider Height: " + this.height);
+
+                console.log("scrolling div Width: " + this.width);
+                console.log("scrolling div Height: " + this.height);
 
                 this.scrollingDiv.style.width = this.width + 'px';
                 this.scrollingDiv.style.height = this.height + 'px';
@@ -179,11 +185,11 @@
             }
         },  // ]]]
 
-        getScrollingDiv: function() {  // [[[
+        getScrollingDiv: function() {  // [[[2
             return this.scrollingDiv;
         },  // ]]]
 
-        distributeArticles: function() {  // [[[1
+        distributeArticles: function() {  // [[[2
             /* Columns first distribution. */
             var leftPos = 0;
             var topPos = 0;
@@ -249,26 +255,27 @@
     // ]]]
 
 
-    var ASNavigatorButtons = { // [[[
-        // Navigation buttons
+    var ASNavigatorButtons = { // [[[1
+        // Navigation buttons setup.
         width: 0,
         height: 0,
         upLeft: null,
         downRight: null,
 
-        setNavigation: function() {
+        setNavigation: function() {  // [[[2
             /* This should be put in condition for checking if navigation buttons are needed at all. */
             //    if (ASMainContainer.width < (ASScrollingDiv.width + 2 * ASArticle.gap)) {}
-            if (ASBasic.orientation.current === "Horizontal" && ASMainContainer.width >= ASScrollingDiv.width) {
-                //  /Don't need navigation buttons.
-            } else if (ASBasic.orientation.current === "Vertical" && ASMainContainer.height >= ASScrollingDiv.height) {
-                //
-            }
+            console.log("main container width: " + ASMainContainer.width);
+            console.log("scrolling div width: " + ASScrollingDiv.width);
+
+            // Finding navigation buttons.
             this.upLeft = document.getElementById('up_left_nav');
             this.downRight = document.getElementById('down_right_nav');
+            //console.log("before setup nav buttons");
+            console.log("orientation: " + ASBasic.orientation.current);
 
-            if (ASBasic.orientation.current === 'Horizontal') {
-
+            if (ASBasic.orientation.current === "Horizontal" && ASMainContainer.width < ASScrollingDiv.width) {
+                console.log("huh, nav horiz buttons created!");
                 this.upLeft.className += ' navigation_horizontal';
                 this.downRight.className += ' navigation_horizontal';
 
@@ -290,7 +297,9 @@
                 this.upLeft.style.top = 0 + 'px';
                 this.downRight.style.top = 0 + 'px';
 
-            } else if (ASBasic.orientation.current === 'Vertical') {
+                return [this.upLeft, this.downRight];
+
+            } else if (ASBasic.orientation.current === "Vertical" && ASMainContainer.height < ASScrollingDiv.height) {
 
                 this.upLeft.className += ' navigation_vertical';
                 this.downRight.className += ' navigation_vertical';
@@ -316,10 +325,15 @@
 
                 this.downRight.style.left = 0 + 'px';
                 this.downRight.style.top = ASMainContainer.height + ASNavigatorButtons.height + 2 + 'px';
-            }
 
-            return [this.upLeft, this.downRight];
-        },
+                return [this.upLeft, this.downRight];
+            } else {
+                // This is needed because navigation buttons are created in html file (staticaly).
+                //console.log("haho I'm called");
+                this.upLeft.className = "navigation_hide";
+                this.downRight.className = "navigation_hide";
+            }
+        },  // ]]]
 
         getUpLeft: function() {
             return this.upLeft;
@@ -328,12 +342,10 @@
         getDownRight: function() {
             return this.downRight;
         },
-    }  // ASNavigatorButtons object.
-    // ]]]
+    }  // ]]] ASNavigatorButtons object.
 
 
-    var ASSliderBar = {
-        // Slider bar.
+    var ASSliderBar = {  // [[[1
         sliderOn: false,
         slider: null,
         sliderWidth: 0,
@@ -390,7 +402,7 @@
 
         i: 0,  // object iterator.
 
-        setSliderBar: function() { // [[[1
+        setSliderBar: function() { // [[[2
             //console.log("In Function setSliderBar: " + this.sliderOn);
             this.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
             this.tweenFrameNumber = this.tween.length;
@@ -484,15 +496,14 @@
                     // pass.
                 }
             }
-        },  // setSliderBar() function.
-        // ]]]
+        },  // END setSliderBar() function. ]]]
 
 
-        /* Following functions can't use 'this' keyword because they are attached to elements as event listeners.
-         * Instead use function name as namespace.*/
+        /* Following functions can't use 'this' keyword because they are attached to the
+         * elements as event listeners. Instead use function name as namespace. */
         // Scrolling to the left function.
         scrollingLeft: function() { // [[[2
-            var funcCounter = 0;  // recursive function call counter!
+            var funcCounter = 0;  // Recursive function call counter! Number of time the function is called.
             var stepCounter = 0;
 
             return function() {
@@ -603,11 +614,10 @@
                     }
                 }
             }
-        }(),  // END of scrollingLeft function
-        // ]]]
+        }(),  // ]]] END of scrollingLeft function
 
         scrollingRight: function() { // [[[2
-            var funcCounter = 0;
+            var funcCounter = 0;  // Number of time the function is called.
 
             return function() {
                 //console.log("Pressed to the RIGHT");
@@ -702,8 +712,7 @@
                     }
                 }
             }
-        }(), // End ScrollingRight function
-        // ]]]
+        }(), // ]]] End ScrollingRight function
 
         sliderMousedown: function(e) {  // [[[2
             /* This function saves the clicked postion of mouse's 'click' event and sets this.up to false. */
@@ -837,8 +846,7 @@
                 }
             }
         }  // ]]]
-    }  // END Slider object.
-    // ]]]
+    }  // ]]] END ASSliderBar object.
 
 
     var ASWrapper = {  // [[[
@@ -876,7 +884,7 @@
      * The actual construction of the slider.  *
      * *************************************** */
 
-    ASBasic.orientation.setOrientation(0);
+    ASBasic.orientation.setOrientation(0);  // 0 = Horizontal, 1 = Vertical
     //console.log("Orientation: " + ASBasic.orientation.current);
 
     ASMainContainer.setMainContainer();
@@ -885,26 +893,45 @@
     ASWrapper.setWrapper();
     ASSliderBar.setSliderBar();
 
-    // Adding event listeners to buttons.
-    navButtons[0].addEventListener('click', ASSliderBar.scrollingLeft, false);
-    navButtons[1].addEventListener('click', ASSliderBar.scrollingRight, false);
+    // Adding event listeners to buttons only if they where created!
+    if (typeof navButtons !== "undefined") {
+        navButtons[0].addEventListener('click', ASSliderBar.scrollingLeft, false);
+        navButtons[1].addEventListener('click', ASSliderBar.scrollingRight, false);
+
+        // Adding event listeners to slider bar.
+        ASSliderBar.slider.addEventListener('mousedown', ASSliderBar.sliderMousedown, false);
+        document.addEventListener('mouseup', ASSliderBar.sliderMouseup, false);
+        document.addEventListener('mousemove', ASSliderBar.sliderMousemove, false);
+        document.addEventListener('selectstart', ASSliderBar.preventSelecting, false);
+
+        //    // Decoration of slider_bar: coloring...
+        ASSliderBar.slider.addEventListener('mouseover', function() {
+            ASSliderBar.slider.style.background = '#800000';
+        }, false);
+
+        ASSliderBar.slider.addEventListener('mouseout', function() {
+        // if (this.up) {
+                ASSliderBar.slider.style.background = '#4c0000';
+        // }
+        }, false);
+    }
 
     // Adding event listeners to slider bar.
-    ASSliderBar.slider.addEventListener('mousedown', ASSliderBar.sliderMousedown, false);
-    document.addEventListener('mouseup', ASSliderBar.sliderMouseup, false);
-    document.addEventListener('mousemove', ASSliderBar.sliderMousemove, false);
-    document.addEventListener('selectstart', ASSliderBar.preventSelecting, false);
+    //ASSliderBar.slider.addEventListener('mousedown', ASSliderBar.sliderMousedown, false);
+    //document.addEventListener('mouseup', ASSliderBar.sliderMouseup, false);
+    //document.addEventListener('mousemove', ASSliderBar.sliderMousemove, false);
+    //document.addEventListener('selectstart', ASSliderBar.preventSelecting, false);
 
     //    // Decoration of slider_bar: coloring...
-    ASSliderBar.slider.addEventListener('mouseover', function() {
-        ASSliderBar.slider.style.background = '#800000';
-    }, false);
+    //ASSliderBar.slider.addEventListener('mouseover', function() {
+    //    ASSliderBar.slider.style.background = '#800000';
+    //}, false);
 
-    ASSliderBar.slider.addEventListener('mouseout', function() {
-       // if (this.up) {
-            ASSliderBar.slider.style.background = '#4c0000';
-       // }
-    }, false);
+    //ASSliderBar.slider.addEventListener('mouseout', function() {
+    //   // if (this.up) {
+    //        ASSliderBar.slider.style.background = '#4c0000';
+    //   // }
+    //}, false);
 })(window);
 
     //    throw {
