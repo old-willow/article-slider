@@ -3,10 +3,11 @@
  * maintainer: Kolozsi Róbert <robert.kolozsi@gmail.com>
  * date: Nov 13, 2012
  * last milestone: March 21, 2013
- * last update: Aug 23, 2013
+ * last update: Aug 23, 2013 ---
+ * last update: Jan 10, 2013
  */
 
-/* This is a prototype project. */
+/* This is a prototype project. Building kind of API.*/
 
 /* index.html is the basic html setup for this slider. */
 
@@ -16,7 +17,7 @@
     var sliderBar;  // Slider bar navigation slider.
     var upLeftNav, downRightNav;  // Navigation button elements.
 
-    var ASArticle = {
+    var ASArticle = {  // [[[
         width: 150 + 10,  // 10 is for border of article item.
         height: 100 + 10,
 
@@ -36,15 +37,16 @@
        }
 
     }
+    // ]]]
 
 
-    var ASBasic = {
+    var ASBasic = { // [[[
         /* Basic object for setup a slider structure. */
         /* Default setting is a horizontal orientation. */
         orientation: {
             types: ['Horizontal', 'Vertical'],
 
-            current: null,
+            current: null,  // current orientation type
 
             setOrientation: function(n) {
                 this.current = this.types[n];
@@ -55,13 +57,13 @@
          * and space between article and scroll_div. */
         gap: 10,
 
-        nRows: 1,  // This is taken into a count only if orientation is horiz.
-        nColumns: 2,  // This is taken into a count only if orientation is vert.
-        setColumnsRows: function() {
+        nRows: 1,  // This is taken into a count only if orientation is horizontal.
+        nColumns: 2,  // This is taken into a count only if orientation is vertical.
+        setColumnsRows: function() {  // [[[
             /* if orientation is horizontal then decide how many rows you want and
              * columns have to be calculated. */
             if (this.orientation.current === 'Horizontal') {
-                // Correcting number of columns because they are in dependencies of ASArticle.nArticles and nRows.
+                // Correcting number of columns because they are in dependence of ASArticle.nArticles and nRows.
                 if (ASArticle.nArticles <= this.nRows) {
                     this.nRows = ASArticle.nArticles;
                     this.nColumns = 1;
@@ -83,22 +85,23 @@
             } else {
                 console.log("ERROR: Can't calculate columns or rows for some error accoured!");
             }
-        }
+        }  // ]]]
     }
+    // ]]]
 
 
-    var ASMainContainer = {
+    var ASMainContainer = {  // [[[
+        /* Need for wrapper div to contain mainContaine div and navigation divs. */
         wrapper: null,  // The wrapper div.
         wrapperWidth: 0,
         wrapperHeight: 0,
 
         /* Main Container. (the main container div) */
         mainContainer: null,
-        height: 300,   // This is should be set manualy if orientation is vertical otherwise it's calculated.
-        width: 300,    // This is should be set manualy if orientation is horizontal otherwise it's calculated.
+        height: 300,   // This should be set manualy if orientation is vertical otherwise it's calculated.
+        width: 300,    // This should be set manualy if orientation is horizontal otherwise it's calculated.
 
-        setMainContainer: function() {
-            /* If you rename this rename it also in html and css files! */
+        setMainContainer: function() {  // [[[
             this.mainContainer = document.getElementById('main_container');
 
             if (typeof this.mainContainer !== null) {
@@ -129,7 +132,7 @@
             } else {
                 console.log("ERROR: You didn't named id properly or you don't have any main container element in html file.");
             }
-        },
+        },  // ]]]
 
         getMainContainer: function() {
             return this.mainContainer;
@@ -140,15 +143,16 @@
             ASScrollingDiv.setScrollingDiv();
         }
     }
+    // ]]]
 
 
-    var ASScrollingDiv = {
+    var ASScrollingDiv = {  // [[[
         width: 0,
         height: 0,
 
         scrollingDiv: null,
 
-        setScrollingDiv: function() {
+        setScrollingDiv: function() {  // [[[1
             this.scrollingDiv = document.getElementById('scrolling_div');
 
             if (typeof this.scrollingDiv !== null) {
@@ -173,13 +177,13 @@
             } else {
                 console.log("ERROR: You didn't named id properly or don't have any slide container element in html file.");
             }
-        },
+        },  // ]]]
 
-        getScrollingDiv: function() {
+        getScrollingDiv: function() {  // [[[
             return this.scrollingDiv;
-        },
+        },  // ]]]
 
-        distributeArticles: function() {
+        distributeArticles: function() {  // [[[1
             /* Columns first distribution. */
             var leftPos = 0;
             var topPos = 0;
@@ -239,11 +243,13 @@
                     topPos += ASArticle.height + ASBasic.gap;
                 }
             }
-        }
+        } // End distributeArticles
+        // ]]]
     }
+    // ]]]
 
 
-    var ASNavigatorButtons = {
+    var ASNavigatorButtons = { // [[[
         // Navigation buttons
         width: 0,
         height: 0,
@@ -251,8 +257,13 @@
         downRight: null,
 
         setNavigation: function() {
-            /* This should be put in condition for checking if navigations are needed at all. */
+            /* This should be put in condition for checking if navigation buttons are needed at all. */
             //    if (ASMainContainer.width < (ASScrollingDiv.width + 2 * ASArticle.gap)) {}
+            if (ASBasic.orientation.current === "Horizontal" && ASMainContainer.width >= ASScrollingDiv.width) {
+                //  /Don't need navigation buttons.
+            } else if (ASBasic.orientation.current === "Vertical" && ASMainContainer.height >= ASScrollingDiv.height) {
+                //
+            }
             this.upLeft = document.getElementById('up_left_nav');
             this.downRight = document.getElementById('down_right_nav');
 
@@ -318,17 +329,18 @@
             return this.downRight;
         },
     }  // ASNavigatorButtons object.
+    // ]]]
 
 
     var ASSliderBar = {
         // Slider bar.
-        sliderOn: true,
+        sliderOn: false,
         slider: null,
         sliderWidth: 0,
         sliderHeight: 0,
 
         maxScrollingDivMovement: 0,
-        moveLimit: 0,
+        moveLimit: 0,  // Arbitraty number of pixels that slide will move. Defined in setSliderBar function.
         SAVED_MOVE_LIMIT: 0,
         stepDivisor: 0,
 
@@ -364,7 +376,7 @@
         move: false,  // event: 
 
         readX: 0,   // event: cursor x position on the screen.
-        lastX: 0,   // event: previously clicked x position.
+        lastX: 0,   // event: first time clicked x position.
         clickX: 0,  // event: x position where is clicked.
         diffX: 0,   // event: lasX - readX
         // Check if slider is moved manualy.
@@ -376,37 +388,40 @@
 
         articleMultiplier: 2,
 
-        i: 0,  // this is a simple object iterator.
+        i: 0,  // object iterator.
 
-        setSlider: function() {
+        setSliderBar: function() { // [[[1
+            //console.log("In Function setSliderBar: " + this.sliderOn);
             this.scrollDivCurrentPosX = ASScrollingDiv.scrollingDiv.offsetLeft;  // var position
             this.tweenFrameNumber = this.tween.length;
 
             if (ASBasic.orientation.current === 'Horizontal') {
                 if (ASScrollingDiv.width > ASMainContainer.width) {
+                    this.sliderOn = true;
+                    //console.log("In Function setSliderBar: " + this.sliderOn);
                     this.maxScrollingDivMovement = ASScrollingDiv.width - ASMainContainer.width;
                     //console.log("maxScrollingDivMovement: " + this.maxScrollingDivMovement);
 
                     /* Partitioning max movement of scrolling div per one click. */
                     this.moveLimit = this.articleMultiplier * ASArticle.width + this.articleMultiplier * ASBasic.gap;
-                    //this.SAVED_MOVE_LIMIT = this.moveLimit;
                     //console.log("moveLimit: " + this.moveLimit);
-                    //this.stepDivisor = parseInt(Math.floor(this.maxScrollingDivMovement / this.moveLimit));
                     this.stepDivisor = parseInt(Math.ceil(this.maxScrollingDivMovement / this.moveLimit));
-                    //this.stepDivisor = this.maxScrollingDivMovement / this.moveLimit;
                     //console.log("stepDivisor: " + this.stepDivisor);
 
-                    // Recalculated moveLimit for precission. !!! Very important !!!
+                    // Recalculated moveLimit for precission reason. !!! Very important !!!
                     this.moveLimit = this.maxScrollingDivMovement / this.stepDivisor;
-                    console.log("moveLimit: " + this.moveLimit);
+                    //console.log("moveLimit: " + this.moveLimit);
                     this.SAVED_MOVE_LIMIT = this.moveLimit;
 
                     if (this.sliderOn) {
                         // Creating a slider bar.
-                        this.slider = document.getElementById('slider_div');
+                        this.slider = document.getElementById('slider_bar');
+                        //console.log("slider: " + this.slider.id);
+                        //console.log("type of slider: " + typeof this.slider);
 
                         if (typeof this.slider !== null) {
-                            this.slider.setAttribute('class', 'slider_div_horizontal');
+                            console.log("Making of " + this.slider.id + " object");
+                            this.slider.setAttribute('class', 'slider_bar_horizontal');
                             this.slider.style.visibility = 'visible';
                             this.sliderWidth = (ASMainContainer.width / ASScrollingDiv.width) * ASMainContainer.width;
                             this.slider.style.width = this.sliderWidth + 'px';
@@ -415,8 +430,11 @@
                             this.slider.style.left = 0 + 'px';
 
                             this.maxSliderMovementH = ASMainContainer.width - this.sliderWidth;
+
+                            // Scale movement of slider and scroll divs.
                             this.scaleSliderMovementH = this.maxSliderMovementH / (ASScrollingDiv.width - ASMainContainer.width);
                             this.scaleScrollDivMovementH = (ASScrollingDiv.width - ASMainContainer.width) / this.maxSliderMovementH;
+                            //console.log("Scale scroll div: " + this.scaleScrollDivMovementH);
 
                         } else {
                             console.log("ERROR: no slider!");
@@ -424,11 +442,13 @@
                     }
 
                 } else if (ASScrollingDiv.width <= ASMainContainer.width) {
+                    // No need for navigation buttons.
                     // pass.
                 }
 
             } else if (ASBasic.orientation.current === 'Vertical') {
                 if (ASScrollingDiv.height > ASMainContainer.height) {
+                    this.sliderOn = true;
                     this.maxScrollingDivMovement = ASScrollingDiv.height - ASMainContainer.height;
                     this.moveLimit = this.articleMultiplier * ASArticle.height + this.articleMultiplier * ASBasic.gap;
                     this.stepDivisor = parseInt(Math.ceil(this.maxScrollingDivMovement / this.moveLimit));
@@ -439,10 +459,10 @@
                     this.SAVED_MOVE_LIMIT = this.moveLimit;
 
                     if (this.sliderOn) {
-                        this.slider = document.getElementById('slider_div');
+                        this.slider = document.getElementById('slider_bar');
 
                         if (typeof this.slider !== null) {
-                            this.slider.setAttribute('class', 'slider_div_vertical');
+                            this.slider.setAttribute('class', 'slider_bar_vertical');
                             this.slider.style.visibility = 'visible';
                             this.sliderHeight = (ASMainContainer.height / ASScrollingDiv.height) * ASMainContainer.height;
                             this.slider.style.height = this.sliderHeight + 'px';
@@ -460,16 +480,18 @@
                     }
 
                 } else if (ASScrollingDiv.height <= ASMainContainer.height) {
+                    // No need for navigation buttons.
                     // pass.
                 }
             }
-        },  // doASliding() function.
+        },  // setSliderBar() function.
+        // ]]]
 
 
-        /* Following functions can't use this keyword because they are attached to elements as event listeners.
+        /* Following functions can't use 'this' keyword because they are attached to elements as event listeners.
          * Instead use function name as namespace.*/
         // Scrolling to the left function.
-        scrollingLeft: function() {
+        scrollingLeft: function() { // [[[2
             var funcCounter = 0;  // recursive function call counter!
             var stepCounter = 0;
 
@@ -549,7 +571,7 @@
                         // If not in animation initialize frames.
                         if (!ASSliderBar.inAnimation) {
                             ASSliderBar.scrollDivCurrentPosY = ASScrollingDiv.scrollingDiv.offsetTop * -1;
-                            console.log("scrollingdiv postition top: " + ASSliderBar.scrollDivCurrentPosY);
+                            //console.log("scrollingdiv postition top: " + ASSliderBar.scrollDivCurrentPosY);
 
                             for (ASSliderBar.i = 0; ASSliderBar.i < ASSliderBar.tweenFrameNumber; ASSliderBar.i += 1) {
                                 ASSliderBar.scrollDivCurrentPosY += (ASSliderBar.moveLimit * ASSliderBar.tween[ASSliderBar.i] * 0.01);
@@ -582,8 +604,9 @@
                 }
             }
         }(),  // END of scrollingLeft function
+        // ]]]
 
-        scrollingRight: function() {
+        scrollingRight: function() { // [[[2
             var funcCounter = 0;
 
             return function() {
@@ -591,6 +614,7 @@
                 if (ASBasic.orientation.current === 'Horizontal') {
                     if (Math.ceil(ASSliderBar.scrollDivCalculatedPosX) < 0 && funcCounter < ASSliderBar.tweenFrameNumber) {
 
+                        /* Recalculate moveLimit if slider was moved! */
                         if (ASSliderBar.slided) {
                             ASSliderBar.scrollingReminder = Math.abs(ASSliderBar.scrollDivCalculatedPosX);
                             ASSliderBar.stepDivisor = parseInt(Math.ceil(ASSliderBar.scrollingReminder / ASSliderBar.moveLimit));
@@ -678,9 +702,10 @@
                     }
                 }
             }
-        }(),
+        }(), // End ScrollingRight function
+        // ]]]
 
-        sliderMousedown: function(e) {
+        sliderMousedown: function(e) {  // [[[2
             /* This function saves the clicked postion of mouse's 'click' event and sets this.up to false. */
             if (!e) {
                 var e = window.event;
@@ -704,12 +729,12 @@
                 ASSliderBar.clickX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
                 ASSliderBar.lastX = ASSliderBar.clickX;
             }
-        },
+        },  // ]]]
 
-        sliderMousemove: function(e) {
-            /* This function works only if there was mousedown event on the slider_div element.
+        sliderMousemove: function(e) { // [[[2
+            /* This function works only if there was mousedown event on the slider_bar element.
              * It is attached to the document element. */
-            //console.log("up: " + this.up);
+            //console.log("up: " + ASSliderBar.up);
             if (!ASSliderBar.up) {  // If holding down the button on slider bar.
                 if (!e) {
                     var e = window.event;
@@ -719,7 +744,7 @@
                 ASSliderBar.slided = true;
                 //console.log(ASSliderBar.slider);
 
-                // Calculating the slider_div position and moving it also.
+                // Calculating the slider_bar position and moving it also.
                 if (e.pageX) {
                     //console.log("I'm here!");
                     //console.log("readX: " + this.readX);
@@ -732,9 +757,9 @@
                 // Moving slider bar to the RIGHT.
                 if ((ASSliderBar.readX > ASSliderBar.lastX) &&
                     ASSliderBar.sliderPosX <= ASSliderBar.maxSliderMovementH &&
-                    ASSliderBar.scrollDivCalculatedPosX > -(ASSliderBar.maxScrollingDivMovement)) {
+                    Math.ceil(ASSliderBar.scrollDivCalculatedPosX) > -(ASSliderBar.maxScrollingDivMovement)) {
 
-                    ASSliderBar.diffX = (ASSliderBar.readX - ASSliderBar.lastX);  // Difference between current postion and last
+                    ASSliderBar.diffX = (ASSliderBar.readX - ASSliderBar.lastX);  // Difference between current and last position
                     //console.log('diff_x: ' + this.diffX);
 
                     if ((ASSliderBar.sliderPosX + ASSliderBar.diffX) <= ASSliderBar.maxSliderMovementH) {
@@ -754,7 +779,7 @@
                 // Moving slider bar to the LEFT.
                 } else if ((ASSliderBar.readX < ASSliderBar.lastX) &&
                             ASSliderBar.sliderPosX >= 0 &&
-                            ASSliderBar.scrollDivCalculatedPosX < 0) {
+                            Math.ceil(ASSliderBar.scrollDivCalculatedPosX) < 0) {
 
                     ASSliderBar.diffX = (ASSliderBar.lastX - ASSliderBar.readX);
 
@@ -762,24 +787,23 @@
                         ASSliderBar.sliderPosX -= ASSliderBar.diffX;
                         ASSliderBar.scrollDivCalculatedPosX = -(ASSliderBar.sliderPosX * ASSliderBar.scaleScrollDivMovementH);
                     } else if ((ASSliderBar.sliderPosX - ASSliderBar.diffX) < 0) {
-                        //console.log('left zerozero!');
                         //console.log("haho");
                         ASSliderBar.sliderPosX = 0;
                         ASSliderBar.scrollDivCurrentPosX = 0;
                     }
-                    //console.log('moving left: slider_x_pos: ' + this.sliderPosX);
-                    //console.log("pos slider " + ASSliderBar.sliderPosX);
+                    //console.log("pos slider: " + ASSliderBar.sliderPosX);
                     ASSliderBar.slider.style.left = ASSliderBar.sliderPosX + "px";
                     ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + "px";
                     ASSliderBar.lastX = ASSliderBar.readX;
                 }
+                console.log("scroll div pos x: " + ASSliderBar.scrollDivCalculatedPosX);
             }
-        },
+        },  // ]]]
 
-        sliderMouseup: function(e) {
+        sliderMouseup: function(e) {  // [[[2
             /*
              * This function is only executed if there was a mousedown event on
-             * slider_div element and it turned off the this.up to false.
+             * slider_bar element and it turned off the this.up to false.
              * It is attached to the document element.
              * */
             if (!e) {
@@ -794,11 +818,11 @@
                 console.log('MouseUp Event');
                 ASSliderBar.slider.style.background = '#4c0000';
             }
-        },
+        },  // ]]]
 
         /* Selecting element are not possible on this page.
          * This is attached to the document.body element. */
-        preventSelecting: function(e) {
+        preventSelecting: function(e) {  // [[[2
             if (!ASSliderBar.up) {
                 if (!e) {
                     var e = window.event;
@@ -812,11 +836,12 @@
                     e.returnValue = false;  // Firefox doesn't support this.
                 }
             }
-        }
+        }  // ]]]
     }  // END Slider object.
+    // ]]]
 
 
-    var ASWrapper = {
+    var ASWrapper = {  // [[[
         width: 0,
         height: 0,
 
@@ -845,20 +870,20 @@
             }
 
         }
-    }
+    }  // ]]]
 
-    /* *********************************** *
-     * The actual construction of slider.  *
-     * *********************************** */
+    /* *************************************** *
+     * The actual construction of the slider.  *
+     * *************************************** */
 
     ASBasic.orientation.setOrientation(0);
-    console.log("Orientation: " + ASBasic.orientation.current);
+    //console.log("Orientation: " + ASBasic.orientation.current);
 
     ASMainContainer.setMainContainer();
     var navButtons = ASNavigatorButtons.setNavigation();
     ASMainContainer.setArticleSlider();
     ASWrapper.setWrapper();
-    ASSliderBar.setSlider();
+    ASSliderBar.setSliderBar();
 
     // Adding event listeners to buttons.
     navButtons[0].addEventListener('click', ASSliderBar.scrollingLeft, false);
@@ -936,7 +961,7 @@
     //if (scroll_div.children.length > 18) {
     //    left_nav = document.getElementById('left_nav');
     //    right_nav = document.getElementById('right_nav');
-    //    slider_bar = document.getElementById('slider_div');
+    //    slider_bar = document.getElementById('slider_bar');
     //    left_nav.style.height = container_height + "px";
     //    right_nav.style.height = container_height + "px";
 
@@ -1092,11 +1117,11 @@
     //     * http://www.quirksmode.org/js/events_properties.html */
     //    var slider_mousedown = function(e) {
     //        /* Function for setup the sliding possibilities.
-    //         * It is attached to the slider_div element. */
+    //         * It is attached to the slider_bar element. */
     //        if (!e) {
     //            var e = window.event;
     //        }
-    //        slider_div.style.background = '#800000';
+    //        slider_bar.style.background = '#800000';
 
     //        if (e.pageX) {  // Chrome, Opera
     //            console.log('chrome/opera');
@@ -1114,7 +1139,7 @@
     //    };
 
     //    var slider_mousemove = function(e) {
-    //        /* This function works only if there was mousedown event on the slider_div element.
+    //        /* This function works only if there was mousedown event on the slider_bar element.
     //         * It is attached to the document element. */
     //        if (!up) {
     //            if (!e) {
@@ -1146,7 +1171,7 @@
     //                    scroll_div_x_pos = -(scroll_div_max_movement);
     //                }
     //                console.log('moving right: slider_x_pos: ' + slider_x_pos);
-    //                slider_div.style.left = slider_x_pos + "px";
+    //                slider_bar.style.left = slider_x_pos + "px";
     //                scroll_div.style.left = scroll_div_x_pos + "px";
     //                last_x = read_x;
 
@@ -1166,7 +1191,7 @@
     //                    scroll_div_x_pos = 0;
     //                }
     //                console.log('moving left: slider_x_pos: ' + slider_x_pos);
-    //                slider_div.style.left = slider_x_pos + "px";
+    //                slider_bar.style.left = slider_x_pos + "px";
     //                scroll_div.style.left = scroll_div_x_pos + "px";
     //                last_x = read_x;
     //            }
@@ -1176,7 +1201,7 @@
     //    var slider_mouseup = function(e) {
     //        /*
     //         * This function is only executed if there was a mousedown event on
-    //         * slider_div element and it turned off the: up = false.
+    //         * slider_bar element and it turned off the: up = false.
     //         * It is attached to the document element.
     //         * */
     //        if (!e) {
@@ -1189,7 +1214,7 @@
     //            last_x = 0;
     //            diff_x = 0;
     //            console.log('mouseup');
-    //            slider_div.style.background = '#4c0000';
+    //            slider_bar.style.background = '#4c0000';
     //        }
     //    }
 
@@ -1234,4 +1259,4 @@
 
 //})(window);
 
-// vim: set tw=120:
+// vim: set tw=120 foldmethod=marker foldmarker=[[[,]]]:
