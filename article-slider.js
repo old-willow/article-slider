@@ -4,7 +4,7 @@
  * date: Nov 13, 2012
  * last milestone: March 21, 2013
  * last update: Aug 23, 2013 ---
- * last update: Jan 11, 2013
+ * last update: Jan 13, 2013
  */
 
 /* This is a prototype project. Building kind of API.*/
@@ -17,9 +17,11 @@
     var sliderBar;  // Slider bar navigation slider.
     var upLeftNav, downRightNav;  // Navigation button elements.
 
+    var BORDER = 10;  // border of article item.
+
     var ASArticle = {  // [[[
-        width: 150 + 10,  // 10 is for border of article item.
-        height: 100 + 10,
+        width: 150 + BORDER,
+        height: 100 + BORDER,
 
         /* This value will be acquired dinamically by querying database. */
         nArticles: 7,
@@ -89,7 +91,7 @@
     } // ]]]
 
 
-    var ASMainContainer = {  // [[[
+    var ASMainContainer = {  // [[[1
         /* Need for wrapper div to contain mainContaine div and navigation divs. */
         wrapper: null,  // The wrapper div.
         wrapperWidth: 0,
@@ -100,7 +102,7 @@
         height: 300,   // This should be set manualy if orientation is vertical otherwise it's calculated.
         width: 300,    // This should be set manualy if orientation is horizontal otherwise it's calculated.
 
-        setMainContainer: function() {  // [[[
+        setMainContainer: function() {  // [[[2
             this.mainContainer = document.getElementById('main_container');
 
             if (typeof this.mainContainer !== null) {
@@ -109,8 +111,8 @@
                 if (ASBasic.orientation.current === 'Horizontal') {
                     this.mainContainer.setAttribute('class', 'main_container_horizontal');
                     this.height = (ASBasic.nRows * ASArticle.height) +
-                        ((ASBasic.nRows - 1) * ASBasic.gap) +
-                        (2 * ASBasic.gap);
+                                  ((ASBasic.nRows - 1) * ASBasic.gap) +
+                                  (2 * ASBasic.gap);
 
                     this.mainContainer.style.top = 0 + 'px';
                     this.mainContainer.style.left = 0 + 'px'; //this.width + 'px';
@@ -118,8 +120,8 @@
                 } else if (ASBasic.orientation.current === 'Vertical') {
                     this.mainContainer.setAttribute('class', 'main_container_vertical');
                     this.width = (ASBasic.nColumns * ASArticle.width) +
-                        ((ASBasic.nColumns - 1) * ASBasic.gap) +
-                        (2 * ASBasic.gap);
+                                 ((ASBasic.nColumns - 1) * ASBasic.gap) +
+                                 (2 * ASBasic.gap);
 
                     this.mainContainer.style.top = ASNavigatorButtons.height + 'px';  // ??? what is this ???
                 }
@@ -129,7 +131,7 @@
                 this.mainContainer.style.height = this.height + 'px';
 
             } else {
-                console.log("ERROR: You didn't named id properly or you don't have any main container element in html file.");
+                console.log("ERROR: You don't have any main container element with id='main_container' in html file.");
             }
         },  // ]]]
 
@@ -137,15 +139,14 @@
             return this.mainContainer;
         },
 
-        /* ERROR: Navigation buttons object is uses scrolling div
+        /* ERROR: Navigation buttons object is using scrolling div
          * width and height properties before scrolling div is created!!!!!!!!
          * CHANGE ORDER */
         setArticleSlider: function() {
             this.setMainContainer();
             ASScrollingDiv.setScrollingDiv();
         }
-    }
-    // ]]]
+    }  // ]]]
 
 
     var ASScrollingDiv = {  // [[[1
@@ -249,10 +250,8 @@
                     topPos += ASArticle.height + ASBasic.gap;
                 }
             }
-        } // End distributeArticles
-        // ]]]
-    }
-    // ]]]
+        } // ]]] End distributeArticles
+    }  // ]]]
 
 
     var ASNavigatorButtons = { // [[[1
@@ -496,7 +495,7 @@
                     // pass.
                 }
             }
-        },  // END setSliderBar() function. ]]]
+        },  // ]]] END setSliderBar() function.
 
 
         /* Following functions can't use 'this' keyword because they are attached to the
@@ -543,7 +542,7 @@
 
                         ASSliderBar.scrollDivCalculatedPosX = -ASSliderBar.frames[funcCounter];
                         // Math.abs - because slider bar never goes on negative side.
-                        // Is's minimal position is 0, max is maxSliderMovementH.
+                        // It's minimal position is 0, max is maxSliderMovementH.
                         ASSliderBar.sliderPosX = Math.abs(ASSliderBar.scrollDivCalculatedPosX * ASSliderBar.scaleSliderMovementH);
 
                         ASScrollingDiv.scrollingDiv.style.left = ASSliderBar.scrollDivCalculatedPosX + 'px';
@@ -874,7 +873,7 @@
                 this.wrapper.style.left = 0 + 'px'; /* This should be set in css file. */
 
             } else {
-                conosle.log("ERROR: wrapper object not found in html file.");
+                console.log("ERROR: wrapper object not found in html file.");
             }
 
         }
